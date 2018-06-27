@@ -134,7 +134,7 @@ class VisitController extends Controller
         // try get new visits
         $new_visits = $this->get_new_visits($visit_time);
         if (!$new_visits) return NULL;
-
+        //return $visit_time;
         // for each new visit ask google
         foreach ($new_visits as $visit){
             $data = [
@@ -309,7 +309,7 @@ class VisitController extends Controller
      */
     private function get_last_visit()
     {
-        $last_visit_time = DB::select('SELECT MAX(visit_start) as last_visit FROM visits');
+        $last_visit_time = DB::select('SELECT concat( MAX(visit_start) ) as last_visit FROM visits');
         return empty($last_visit_time)? false : $last_visit_time[0]->last_visit;
     }
 

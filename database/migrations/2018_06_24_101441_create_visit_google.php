@@ -18,8 +18,8 @@ class CreateVisitGoogle extends Migration
 
             $table->string('visit_id',20);
             // $table->string('salesman_id',10);
-            $table->dateTime('visit_start');
-            $table->dateTime('visit_finish');
+            $table->dateTime('visit_start',3);
+            $table->dateTime('visit_finish',3);
             // $table->dateTime('sync_time');
             $table->decimal('current_customer_lat',13,10);
             $table->decimal('current_customer_lng',13,10);
