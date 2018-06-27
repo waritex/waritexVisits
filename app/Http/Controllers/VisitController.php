@@ -163,10 +163,10 @@ class VisitController extends Controller
             $data['google_distance'] = $g_distance;
             // create
             $this->create($data);
-            DB::update('
-            UPDATE `visits` SET `visit_start`=? ,`visit_finish`=? 
-            WHERE visit_id = ?
-            ' , [$visit->visit_start  , $visit->visit_finish , $visit->visit_id ]);
+//            DB::update('
+//            UPDATE `visits` SET `visit_start`=? ,`visit_finish`=?
+//            WHERE visit_id = ?
+//            ' , [$visit->visit_start  , $visit->visit_finish , $visit->visit_id ]);
         }
     }
 
@@ -192,24 +192,24 @@ class VisitController extends Controller
         if ( !is_array($arr) )
             return false;
 
-        return Visit::create($arr);
-//        return DB::insert('
-//        INSERT INTO `visits`(`visit_id`, `visit_start`, `visit_finish`, `current_customer_lat`, `current_customer_lng`, `last_visit_id`, `last_customer_lat`, `last_customer_lng`, `google_time_pessimistic`, `google_distance`, `created_at`, `updated_at`)
-//        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-//        ' , [
-//            $arr['visit_id'],
-//            $arr['visit_start'],
-//            $arr['visit_finish'],
-//            $arr['current_customer_lng'],
-//            $arr['current_customer_lat'],
-//            $arr['last_visit_id'],
-//            $arr['last_customer_lng'],
-//            $arr['last_customer_lat'],
-//            $arr['google_time_pessimistic'],
-//            $arr['google_distance'],
-//            now(),
-//            now(),
-//        ]);
+        //return Visit::create($arr);
+        return DB::insert('
+        INSERT INTO `visits`(`visit_id`, `visit_start`, `visit_finish`, `current_customer_lat`, `current_customer_lng`, `last_visit_id`, `last_customer_lat`, `last_customer_lng`, `google_time_pessimistic`, `google_distance`, `created_at`, `updated_at`)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+        ' , [
+            $arr['visit_id'],
+            $arr['visit_start'],
+            $arr['visit_finish'],
+            $arr['current_customer_lng'],
+            $arr['current_customer_lat'],
+            $arr['last_visit_id'],
+            $arr['last_customer_lng'],
+            $arr['last_customer_lat'],
+            $arr['google_time_pessimistic'],
+            $arr['google_distance'],
+            now(),
+            now(),
+        ]);
     }
 
     /**
