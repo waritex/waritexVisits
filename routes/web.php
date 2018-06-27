@@ -17,5 +17,7 @@ Route::get('/', function () {
 
 Route::get('/get/{visit_id}/{date}/{salesman}/{lat1}/{lng1}/{lat2}/{lng2}' , 'VisitController@get');
 
+Route::get('/get2/{visit_id}' , 'VisitController@get_v2');
+
 
 Route::get('/test' , 'VisitController@test');

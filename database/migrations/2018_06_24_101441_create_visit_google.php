@@ -23,11 +23,11 @@ class CreateVisitGoogle extends Migration
             // $table->dateTime('sync_time');
             $table->decimal('current_customer_lat',13,10);
             $table->decimal('current_customer_lng',13,10);
-            $table->string('last_visit_id',20);
-            $table->decimal('last_customer_lat',13,10);
-            $table->decimal('last_customer_lng',13,10);
-            $table->integer('google_time_pessimistic');
-            $table->integer('google_distance');
+            $table->string('last_visit_id',20)->nullable();
+            $table->decimal('last_customer_lat',13,10)->nullable();
+            $table->decimal('last_customer_lng',13,10)->nullable();
+            $table->integer('google_time_pessimistic')->nullable();
+            $table->integer('google_distance')->nullable();
             $table->timestamps();
 
             $table->unique('visit_id');

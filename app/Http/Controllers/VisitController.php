@@ -64,7 +64,7 @@ class VisitController extends Controller
         // dd($this->get_new_visits(now()->addMinutes(-10)));
         // dd($this->get_visit_salesbuzz('IRD009-0100095'));
         // dd($this->get_last_visit());
-         dd($this->task());
+        // dd($this->task());
     }
 
     public function get_v2($visit_id)
@@ -255,7 +255,7 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-   
+            AND visit.SalesmanNo LIKE "IRD%"
         ', [$stat_time]);
 
         return empty($new_visits)? false : $new_visits;
@@ -298,7 +298,7 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.[ID] = ?
-   
+            AND visit.SalesmanNo LIKE "IRD%"
         ', [$visit_id]);
 
         return empty($visit)? false : $visit[0];
