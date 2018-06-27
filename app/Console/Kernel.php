@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\VisitController;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -26,7 +27,14 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->call('App\Http\Controllers\VisitController@task')->everyMinute();
+        //
+        //schedule->call('App\Http\Controllers\VisitController@task')->everyMinute();
+        $schedule->call(function (){
+            $controller = new VisitController();
+            $controller->task();
+        })
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**
