@@ -279,7 +279,7 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-            AND visit.SalesmanNo LIKE 'IRD%' hhh
+            AND visit.SalesmanNo LIKE 'IRD%' 
         ", [$start_time]);
 
         return empty($new_visits)? false : $new_visits;
