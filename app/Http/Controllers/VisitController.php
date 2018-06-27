@@ -92,14 +92,14 @@ class VisitController extends Controller
             return NULL;
 
         $data = [
-            'visit_id'                      =>  $visit['visit_id'],
-            'visit_start'                   =>  $visit['visit_start'],
-            'visit_finish'                  =>  $visit['visit_finish'],
-            'current_customer_lng'          =>  $visit['Longitude'],
-            'current_customer_lat'          =>  $visit['Latitude'],
-            'last_visit_id'                 =>  $visit['last_id'],
-            'last_customer_lng'             =>  $visit['last_lng'],
-            'last_customer_lat'             =>  $visit['last_lat'],
+            'visit_id'                      =>  $visit->visit_id,
+            'visit_start'                   =>  $visit->visit_start,
+            'visit_finish'                  =>  $visit->visit_finish,
+            'current_customer_lng'          =>  $visit->Longitude,
+            'current_customer_lat'          =>  $visit->Latitude,
+            'last_visit_id'                 =>  $visit->last_id,
+            'last_customer_lng'             =>  $visit->last_lng,
+            'last_customer_lat'             =>  $visit->last_lat,
         ];
         // then ask google
         // ask google if not exist
@@ -138,14 +138,14 @@ class VisitController extends Controller
         // for each new visit ask google
         foreach ($new_visits as $visit){
             $data = [
-                'visit_id'                      =>  $visit['visit_id'],
-                'visit_start'                   =>  $visit['visit_start'],
-                'visit_finish'                  =>  $visit['visit_finish'],
-                'current_customer_lng'          =>  $visit['Longitude'],
-                'current_customer_lat'          =>  $visit['Latitude'],
-                'last_visit_id'                 =>  $visit['last_id'],
-                'last_customer_lng'             =>  $visit['last_lng'],
-                'last_customer_lat'             =>  $visit['last_lat'],
+                'visit_id'                      =>  $visit->visit_id,
+                'visit_start'                   =>  $visit->visit_start,
+                'visit_finish'                  =>  $visit->visit_finish,
+                'current_customer_lng'          =>  $visit->Longitude,
+                'current_customer_lat'          =>  $visit->Latitude,
+                'last_visit_id'                 =>  $visit->last_id,
+                'last_customer_lng'             =>  $visit->last_lng,
+                'last_customer_lat'             =>  $visit->last_lat,
             ];
             // then ask google
             // ask google
