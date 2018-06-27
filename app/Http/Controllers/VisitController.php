@@ -165,8 +165,8 @@ class VisitController extends Controller
             $this->create($data);
             DB::update('
             UPDATE `visits` SET `visit_start`=? ,`visit_finish`=? 
-            WHERE
-            ' , [$visit->visit_start  , $visit->visit_finish ]);
+            WHERE visit_id = ?
+            ' , [$visit->visit_start  , $visit->visit_finish , $visit->visit_id ]);
         }
     }
 
@@ -244,7 +244,7 @@ class VisitController extends Controller
      * @param $stat_time
      * @return array
      */
-    private function get_new_visits($stat_time){
+    private function get_new_visits($start_time){
         $new_visits = DB::connection('wri')->select("
       SELECT 
 	  visit.[ID]					AS visit_id
@@ -279,8 +279,8 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-            AND visit.SalesmanNo LIKE 'IRD%'
-        ", [$stat_time]);
+            AND visit.SalesmanNo LIKE 'IRD%' hhh
+        ", [$start_time]);
 
         return empty($new_visits)? false : $new_visits;
     }
