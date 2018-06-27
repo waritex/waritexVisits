@@ -35,6 +35,7 @@ class Kernel extends ConsoleKernel
         })
             ->name('google')
             ->everyMinute()
+            ->appendOutputTo(storage_path('aassdd.log'))
             ->withoutOverlapping();
     }
 
