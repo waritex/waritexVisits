@@ -221,13 +221,13 @@ class VisitController extends Controller
      * @return array
      */
     private function get_new_visits($stat_time){
-        $new_visits = DB::connection('wri')->select('
+        $new_visits = DB::connection('wri')->select("
       SELECT 
 	  visit.[ID]					AS visit_id
       ,visit.[starttime]			AS visit_start
       ,visit.[finishtime]			AS visit_finish
-	  ,verify.[Longitude]			AS "Longitude"
-	  ,verify.[Latitude]			AS "Latitude"
+	  ,verify.[Longitude]			AS Longitude
+	  ,verify.[Latitude]			AS Latitude
 	  ,		(select top 1  ID
 			from V_HH_VisitDuration 
 			INNER JOIN dbo.HH_VisitVerification ON V_HH_VisitDuration.ID = dbo.HH_VisitVerification.VisitNo
@@ -255,8 +255,8 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-            AND visit.SalesmanNo LIKE "IRD%"
-        ', [$stat_time]);
+            AND visit.SalesmanNo LIKE 'IRD%'
+        ", [$stat_time]);
 
         return empty($new_visits)? false : $new_visits;
     }
@@ -264,13 +264,13 @@ class VisitController extends Controller
     // get visit from salesbuzz
     private function get_visit_salesbuzz($visit_id)
     {
-        $visit = DB::connection('wri')->select('
+        $visit = DB::connection('wri')->select("
       SELECT 
 	  visit.[ID]					AS visit_id
       ,visit.[starttime]			AS visit_start
       ,visit.[finishtime]			AS visit_finish
-	  ,verify.[Longitude]			AS "Longitude"
-	  ,verify.[Latitude]			AS "Latitude"
+	  ,verify.[Longitude]			AS Longitude
+	  ,verify.[Latitude]			AS Latitude
 	  ,		(select top 1  ID
 			from V_HH_VisitDuration 
 			INNER JOIN dbo.HH_VisitVerification ON V_HH_VisitDuration.ID = dbo.HH_VisitVerification.VisitNo
@@ -298,8 +298,8 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.[ID] = ?
-            AND visit.SalesmanNo LIKE "IRD%"
-        ', [$visit_id]);
+            AND visit.SalesmanNo LIKE 'IRD%'
+        ", [$visit_id]);
 
         return empty($visit)? false : $visit[0];
     }
