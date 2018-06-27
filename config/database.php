@@ -78,6 +78,17 @@ return [
             'prefix' => '',
         ],
 
+        'wri' => [
+            'driver' => 'sqlsrv',
+            'host' => env('WR_DB_HOST', 'localhost'),
+            'port' => env('WR_DB_PORT', '1433'),
+            'database' => env('WR_DB_DATABASE', 'forge'),
+            'username' => env('WR_DB_USERNAME', 'forge'),
+            'password' => env('WR_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+        ],
+
     ],
 
     /*

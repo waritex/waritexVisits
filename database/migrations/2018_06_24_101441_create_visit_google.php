@@ -17,14 +17,17 @@ class CreateVisitGoogle extends Migration
             $table->increments('id');
 
             $table->string('visit_id',20);
-            $table->string('salesman_id',10);
-            $table->date('visit_date');
+            // $table->string('salesman_id',10);
+            $table->dateTime('visit_start');
+            $table->dateTime('visit_finish');
+            // $table->dateTime('sync_time');
             $table->decimal('current_customer_lat',13,10);
             $table->decimal('current_customer_lng',13,10);
+            $table->string('last_visit_id',20);
             $table->decimal('last_customer_lat',13,10);
             $table->decimal('last_customer_lng',13,10);
-            $table->float('google_time_pessimistic',10,3);
-            $table->float('google_distance',10,3);
+            $table->integer('google_time_pessimistic');
+            $table->integer('google_distance');
             $table->timestamps();
 
             $table->unique('visit_id');
