@@ -142,7 +142,7 @@ class VisitController extends Controller
             // check if there's a duplicate
             if ($this->check_duplicate($visit->visit_id))
                 continue;
-            
+
             $data = [
                 'visit_id'                      =>  $visit->visit_id,
                 'visit_start'                   =>  $visit->visit_start,
