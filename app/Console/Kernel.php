@@ -33,6 +33,7 @@ class Kernel extends ConsoleKernel
             $controller = new VisitController();
             $controller->task();
         })
+            ->name('google')
             ->everyMinute()
             ->withoutOverlapping();
     }
