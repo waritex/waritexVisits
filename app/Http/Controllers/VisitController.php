@@ -157,7 +157,9 @@ class VisitController extends Controller
             // ask google
             $res_google = $this->ask_google($data);
             if ($res_google===false) return NULL;
-            echo $res_google;
+            print_r( '<pre>' );
+            print_r( $res_google );
+            print_r( '</pre>' );
             // get time & distance
             // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
             $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
