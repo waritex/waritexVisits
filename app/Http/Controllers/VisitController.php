@@ -159,7 +159,7 @@ class VisitController extends Controller
             if ($res_google===false) return NULL;
 
             // get time & distance
-            $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+            // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
             $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
             $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
 
