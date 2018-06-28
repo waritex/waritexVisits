@@ -153,22 +153,30 @@ class VisitController extends Controller
                 'last_customer_lng'             =>  $visit->last_lng,
                 'last_customer_lat'             =>  $visit->last_lat,
             ];
-            print_r( $data );
-            echo "\n";
-            // then ask google
-            // ask google
-            $res_google = $this->ask_google($data);
-            if ($res_google===false) return NULL;
 
-            print_r( $res_google );
+            // check if first visit in day
+            if ($this->check_first_visit_inDay($data)===true){
+                $data['google_time_pessimistic'] = 0;
+                $data['google_distance'] = 0;
+            }
 
-            // get time & distance
-            // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-            $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-            $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+            else{
+                // then ask google
+                // ask google
+                $res_google = $this->ask_google($data);
+                if ($res_google===false) return NULL;
 
-            $data['google_time_pessimistic'] = $g_time_pess;
-            $data['google_distance'] = $g_distance;
+                // get time & distance
+                // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+                $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                $data['google_time_pessimistic'] = $g_time_pess;
+                $data['google_distance'] = $g_distance;
+            }
+
+//            print_r( $data );
+//            echo "\n";
+
             // create
             $this->create($data);
         }
@@ -324,11 +332,23 @@ class VisitController extends Controller
         return empty($last_visit_time)? false : $last_visit_time[0]->last_visit;
     }
 
-
+    /**]
+     * check if the visit exist in our DB
+     * @param $visit_id
+     * @return bool
+     */
     private function check_duplicate($visit_id){
         $exist = DB::select('SELECT visit_id FROM visits WHERE visit_id = ? ',[$visit_id]);
         return empty($exist)? false : true;
     }
 
+
+    private function check_first_visit_inDay($visit_data){
+        if ($visit_data['last_customer_lat']==0 || !isset($visit_data['last_customer_lat']) )
+            return true;
+        if ($visit_data['last_customer_lng']==0 || !isset($visit_data['last_customer_lng']))
+            return true;
+        return false;
+    }
 
 }
