@@ -101,20 +101,30 @@ class VisitController extends Controller
             'last_customer_lng'             =>  $visit->last_lng,
             'last_customer_lat'             =>  $visit->last_lat,
         ];
-        // then ask google
-        // ask google if not exist
-        $res_google = $this->ask_google($data);
-        if ($res_google===false)
-            return NULL;
 
-        $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-        $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-        $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+        // check if first visit in day
+        if ($this->check_first_visit_inDay($data)===true){
+            $data['google_time_pessimistic'] = 0;
+            $data['google_distance'] = 0;
+        }
 
-        // create if not exist
-        $data['google_time_pessimistic'] = $g_time_pess;
-        $data['google_distance'] = $g_distance;
+        else{
+            // then ask google
+            // ask google if not exist
+            $res_google = $this->ask_google($data);
+            if ($res_google===false)
+                return NULL;
 
+            // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+            $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+            $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+
+            // create if not exist
+            $data['google_time_pessimistic'] = $g_time_pess;
+            $data['google_distance'] = $g_distance;
+        }
+
+        // save in our DB
         $this->create($data);
 
         // return time and distance
