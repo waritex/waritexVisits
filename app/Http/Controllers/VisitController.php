@@ -173,6 +173,9 @@ class VisitController extends Controller
             else{
                 // then ask google
                 // ask google
+                print_r('\n');
+                print_r($data);
+                print_r('\n');
                 $res_google = $this->ask_google($data);
                 if ($res_google===false) return NULL;
 
