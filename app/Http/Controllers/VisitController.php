@@ -111,6 +111,10 @@ class VisitController extends Controller
         else{
             // then ask google
             // ask google if not exist
+            // check if error on lat || lng
+            if ($this->check_error_visit_latlng($data)===true){
+                return NULL;
+            }
             $res_google = $this->ask_google($data);
             if ($res_google===false)
                 return NULL;
@@ -171,18 +175,29 @@ class VisitController extends Controller
             }
 
             else{
+                // debug data
+                echo "\n";
+                print_r($data);
+                echo "\n";
+                // check if error on lat || lng
+                if ($this->check_error_visit_latlng($data)===true){
+                    continue;
+                }
                 // then ask google
                 // ask google
-                print_r('\n');
-                print_r($data);
-                print_r('\n');
                 $res_google = $this->ask_google($data);
                 if ($res_google===false) return NULL;
 
                 // get time & distance
                 // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-                $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                try{
+                    $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                    $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                }
+                catch (\Exception $exception){
+                    continue;
+                }
+
                 $data['google_time_pessimistic'] = $g_time_pess;
                 $data['google_distance'] = $g_distance;
             }
@@ -360,6 +375,14 @@ class VisitController extends Controller
         if ($visit_data['last_customer_lat']==0 || !isset($visit_data['last_customer_lat']) )
             return true;
         if ($visit_data['last_customer_lng']==0 || !isset($visit_data['last_customer_lng']))
+            return true;
+        return false;
+    }
+
+    private function check_error_visit_latlng($visit_data){
+        if ($visit_data['current_customer_lng']==0 || !isset($visit_data['current_customer_lng']) )
+            return true;
+        if ($visit_data['current_customer_lat']==0 || !isset($visit_data['current_customer_lat']))
             return true;
         return false;
     }
