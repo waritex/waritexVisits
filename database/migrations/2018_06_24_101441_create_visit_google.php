@@ -28,6 +28,7 @@ class CreateVisitGoogle extends Migration
             $table->decimal('last_customer_lng',13,10)->nullable();
             $table->integer('google_time_pessimistic')->nullable();
             $table->integer('google_distance')->nullable();
+            $table->integer('last_read_distance')->nullable();
             $table->timestamps();
 
             $table->unique('visit_id');

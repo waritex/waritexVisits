@@ -100,12 +100,17 @@ class VisitController extends Controller
             'last_visit_id'                 =>  $visit->last_id,
             'last_customer_lng'             =>  $visit->last_lng,
             'last_customer_lat'             =>  $visit->last_lat,
+            'first_gps_lat'                 =>  $visit->first_gps_lat,
+            'first_gps_lng'                 =>  $visit->first_gps_lng,
+            'second_gps_lat'                =>  $visit->second_gps_lat,
+            'second_gps_lng'                =>  $visit->second_gps_lng,
         ];
 
         // check if first visit in day
         if ($this->check_first_visit_inDay($data)===true){
             $data['google_time_pessimistic'] = 0;
             $data['google_distance'] = 0;
+            $data['last_read_distance'] = 0;
         }
 
         else{
@@ -126,6 +131,22 @@ class VisitController extends Controller
             // create if not exist
             $data['google_time_pessimistic'] = $g_time_pess;
             $data['google_distance'] = $g_distance;
+
+            // check last GPS readings
+            if ($this->check_last_GPS_is_Visit($data)===true){
+                $data['last_read_distance'] = 0;
+            }
+            else{
+                $r2_google = $this->ask_google2($data);
+                if ($r2_google===false)
+                    $data['last_read_distance'] = 0;
+
+                // $g2_time = $r2_google['rows'][0]['elements'][0]['duration']['value'];
+                $g2_time_pess = $r2_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                $g2_distance = $r2_google['rows'][0]['elements'][0]['distance']['value'];
+
+                $data['last_read_distance'] = $g2_distance;
+            }
         }
 
         // save in our DB
@@ -166,12 +187,17 @@ class VisitController extends Controller
                 'last_visit_id'                 =>  $visit->last_id,
                 'last_customer_lng'             =>  $visit->last_lng,
                 'last_customer_lat'             =>  $visit->last_lat,
+                'first_gps_lat'                 =>  $visit->first_gps_lat,
+                'first_gps_lng'                 =>  $visit->first_gps_lng,
+                'second_gps_lat'                =>  $visit->second_gps_lat,
+                'second_gps_lng'                =>  $visit->second_gps_lng,
             ];
 
             // check if first visit in day
             if ($this->check_first_visit_inDay($data)===true){
                 $data['google_time_pessimistic'] = 0;
                 $data['google_distance'] = 0;
+                $data['last_read_distance'] = 0;
             }
 
             else{
@@ -200,6 +226,22 @@ class VisitController extends Controller
 
                 $data['google_time_pessimistic'] = $g_time_pess;
                 $data['google_distance'] = $g_distance;
+
+                // check last GPS readings
+                if ($this->check_last_GPS_is_Visit($data)===true){
+                    $data['last_read_distance'] = 0;
+                }
+                else{
+                    $r2_google = $this->ask_google2($data);
+                    if ($r2_google===false)
+                        $data['last_read_distance'] = 0;
+
+                    // $g2_time = $r2_google['rows'][0]['elements'][0]['duration']['value'];
+                    $g2_time_pess = $r2_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                    $g2_distance = $r2_google['rows'][0]['elements'][0]['distance']['value'];
+
+                    $data['last_read_distance'] = $g2_distance;
+                }
             }
 
 //            print_r( $data );
@@ -262,6 +304,28 @@ class VisitController extends Controller
         return json_decode((string) $response->getBody(), true);
     }
 
+    private function ask_google2($data){
+        $http = new Client;
+        // Parameters:
+        /////////////////////////////////////
+        $lat1 = $data['first_gps_lat'];
+        $lng1 = $data['first_gps_lng'];
+        $lat2 = $data['second_gps_lat'];
+        $lng2 = $data['second_gps_lng'];
+        $traffic_model = "pessimistic";
+        $departure_time = "now";
+        $App_key = "AIzaSyCsY5zoDVH3drpV_vvJnD2y-ZiWQbXlNxw";
+        /////////////////////////////////////
+        try{
+            $response = $http->get("https://maps.googleapis.com/maps/api/distancematrix/json?origins=$lat1,$lng1&destinations=$lat2,$lng2&departure_time=$departure_time&traffic_model=$traffic_model&key=$App_key");
+        }
+        catch (\Exception $exception){
+            return false;
+        }
+
+        return json_decode((string) $response->getBody(), true);
+    }
+
     /**
      * get New Visits from SalesBuzz DataBase
      * @param $stat_time
@@ -299,6 +363,71 @@ class VisitController extends Controller
 			and visit.starttime > V_HH_VisitDuration.starttime
 			order by starttime desc
 			) as last_lat
+, (
+			SELECT TOP 1 T.Latitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lat
+			, (
+			SELECT TOP 1 T.Longitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lng
+			,(
+			SELECT TOP 1 T.Latitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lat
+			,(
+			SELECT TOP 1 T.Longitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lng
+
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
@@ -342,6 +471,71 @@ class VisitController extends Controller
 			and visit.starttime > V_HH_VisitDuration.starttime
 			order by starttime desc
 			) as last_lat
+, (
+			SELECT TOP 1 T.Latitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lat
+			, (
+			SELECT TOP 1 T.Longitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lng
+			,(
+			SELECT TOP 1 T.Latitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lat
+			,(
+			SELECT TOP 1 T.Longitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lng
+
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.[ID] = ?
@@ -383,6 +577,18 @@ class VisitController extends Controller
         if ($visit_data['current_customer_lng']==0 || !isset($visit_data['current_customer_lng']) )
             return true;
         if ($visit_data['current_customer_lat']==0 || !isset($visit_data['current_customer_lat']))
+            return true;
+        return false;
+    }
+
+    private function check_last_GPS_is_Visit($visit_data){
+        if ($visit_data['first_gps_lat']==0 || !isset($visit_data['first_gps_lat']) )
+            return true;
+        if ($visit_data['first_gps_lng']==0 || !isset($visit_data['first_gps_lng']))
+            return true;
+        if ($visit_data['second_gps_lat']==0 || !isset($visit_data['second_gps_lat']) )
+            return true;
+        if ($visit_data['second_gps_lng']==0 || !isset($visit_data['second_gps_lng']))
             return true;
         return false;
     }
