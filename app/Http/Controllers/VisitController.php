@@ -67,6 +67,24 @@ class VisitController extends Controller
         // dd($this->task());
     }
 
+    public function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit) {
+
+        $theta = $lon1 - $lon2;
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = acos($dist);
+        $dist = rad2deg($dist);
+        $miles = $dist * 60 * 1.1515;
+        $unit = strtoupper($unit);
+
+        if ($unit == "K") {
+            return dd($miles * 1.609344);
+        } else if ($unit == "N") {
+            return dd($miles * 0.8684);
+        } else {
+            return dd($miles);
+        }
+    }
+
     public function get_v2($visit_id)
     {
         // check inputs
@@ -137,15 +155,13 @@ class VisitController extends Controller
                 $data['last_read_distance'] = 0;
             }
             else{
-                $r2_google = $this->ask_google2($data);
-                if ($r2_google===false)
+                $r2_google = $this->calculateDistanceP($data);
+                if ($r2_google===FALSE){
                     $data['last_read_distance'] = 0;
-
-                // $g2_time = $r2_google['rows'][0]['elements'][0]['duration']['value'];
-                $g2_time_pess = $r2_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                $g2_distance = $r2_google['rows'][0]['elements'][0]['distance']['value'];
-
-                $data['last_read_distance'] = $g2_distance;
+                }
+                else{
+                    $data['last_read_distance'] = $r2_google;
+                }
             }
         }
 
@@ -232,15 +248,13 @@ class VisitController extends Controller
                     $data['last_read_distance'] = 0;
                 }
                 else{
-                    $r2_google = $this->ask_google2($data);
-                    if ($r2_google===false)
+                    $r2_google = $this->calculateDistanceP($data);
+                    if ($r2_google===FALSE){
                         $data['last_read_distance'] = 0;
-
-                    // $g2_time = $r2_google['rows'][0]['elements'][0]['duration']['value'];
-                    $g2_time_pess = $r2_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                    $g2_distance = $r2_google['rows'][0]['elements'][0]['distance']['value'];
-
-                    $data['last_read_distance'] = $g2_distance;
+                    }
+                    else{
+                        $data['last_read_distance'] = $r2_google;
+                    }
                 }
             }
 
@@ -591,6 +605,25 @@ class VisitController extends Controller
         if ($visit_data['second_gps_lng']==0 || !isset($visit_data['second_gps_lng']))
             return true;
         return false;
+    }
+
+
+    private function calculateDistanceP($data) {
+        try{
+            $lat1 = $data['first_gps_lat'];
+            $lon1 = $data['first_gps_lng'];
+            $lat2 = $data['second_gps_lat'];
+            $lon2 = $data['second_gps_lng'];
+            $theta = $lon1 - $lon2;
+            $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+            $dist = acos($dist);
+            $dist = rad2deg($dist);
+            $miles = $dist * 60 * 1.1515;
+            return ($miles * 1.609344)*1000;
+        }
+        catch (\Exception $exception){
+            return FALSE;
+        }
     }
 
 }
