@@ -113,6 +113,7 @@ class VisitController extends Controller
             return response()->json([
                 "Time"          =>      $exist->google_time_pessimistic,
                 "Distance"      =>      $exist->google_distance,
+                "LastReadDistance"      =>      $exist->last_read_distance,
             ]);
         }
 
@@ -185,6 +186,7 @@ class VisitController extends Controller
         return response()->json([
             "Time"          =>      $g_time_pess,
             "Distance"      =>      $g_distance,
+            "LastReadDistance"      =>      $data['last_read_distance'],
         ]);
 
     }
@@ -300,8 +302,20 @@ class VisitController extends Controller
     private function create($arr){
         if ( !is_array($arr) )
             return false;
-
-        return Visit::create($arr);
+        $data = [
+            'visit_id'                      =>  $arr['visit_id'],
+            'visit_start'                   =>  $arr['visit_start'],
+            'visit_finish'                  =>  $arr['visit_finish'],
+            'current_customer_lng'          =>  $arr['current_customer_lng'],
+            'current_customer_lat'          =>  $arr['current_customer_lat'],
+            'last_visit_id'                 =>  $arr['last_visit_id'],
+            'last_customer_lng'             =>  $arr['last_customer_lng'],
+            'last_customer_lat'             =>  $arr['last_customer_lat'],
+            'google_time_pessimistic'       =>  $arr['google_time_pessimistic'],
+            'google_distance'               =>  $arr['google_distance'],
+            'last_read_distance'            =>  $arr['last_read_distance'],
+        ];
+        return Visit::create($data);
     }
 
     /**
