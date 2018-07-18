@@ -124,7 +124,7 @@
 
             <!-- Section header -->
             <div class="section-header text-center">
-                <h2 class="title">Welcome to Waritex</h2>
+                <h2 class="title">Waritex Branches</h2>
             </div>
             <!-- /Section header -->
 
@@ -134,7 +134,7 @@
                     {{--<i class="fa fa-cogs"></i>--}}
                     <h3>Waritex Syria</h3>
                     {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
-                    <a href="http://waritex-syria.com">know more</a>
+                    <a href="http://waritex-syria.com" target="_blank">know more</a>
                 </div>
             </div>
             <!-- /about -->
@@ -144,7 +144,7 @@
                     {{--<i class="fa fa-cogs"></i>--}}
                     <h3>Waritex Egypt</h3>
                     {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
-                    <a href="http://waritex.org">know more</a>
+                    <a href="http://waritex.org" target="_blank">know more</a>
                 </div>
             </div>
             <!-- /about -->
@@ -154,7 +154,27 @@
                     {{--<i class="fa fa-cogs"></i>--}}
                     <h3>Waritex Iraq</h3>
                     {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
-                    <a href="http://waritex-iraq.com">know more</a>
+                    <a href="http://waritex-iraq.com" target="_blank">know more</a>
+                </div>
+            </div>
+            <!-- /about -->
+            <!-- about -->
+            <div class="col-md-4">
+                <div class="about">
+                    {{--<i class="fa fa-cogs"></i>--}}
+                    <h3>Waritex Jordan</h3>
+                    {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
+                    <a href="http://waritex-jordan.com" target="_blank">know more</a>
+                </div>
+            </div>
+            <!-- /about -->
+            <!-- about -->
+            <div class="col-md-4">
+                <div class="about">
+                    {{--<i class="fa fa-cogs"></i>--}}
+                    <h3>Waritex KSA</h3>
+                    {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
+                    <a href="http://waritex-ksa.com" target="_blank">know more</a>
                 </div>
             </div>
             <!-- /about -->
@@ -921,7 +941,7 @@
 
                 <!-- footer copyright -->
                 <div class="footer-copyright">
-                    <p>Copyright © 2017. All Rights Reserved To Waritex. </p>
+                    <p>Copyright © 2018. All Rights Reserved To Waritex. </p>
                 </div>
                 <!-- /footer copyright -->
 
