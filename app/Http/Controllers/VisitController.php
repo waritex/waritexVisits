@@ -409,7 +409,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -425,7 +425,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -441,7 +441,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -457,7 +457,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -517,7 +517,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -533,7 +533,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -549,7 +549,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
@@ -565,7 +565,7 @@ class VisitController extends Controller
 			FROM 
 				(
 				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
-				FROM [test435].[dbo].[hh_salesman_gps] as gps
+				FROM [dbo].[hh_salesman_gps] as gps
 				WHERE 
 				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
 				AND gps.SalesManNo = visit.SalesmanNo
