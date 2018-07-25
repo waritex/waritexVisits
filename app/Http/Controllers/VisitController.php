@@ -472,7 +472,7 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-            AND visit.SalesmanNo LIKE 'IRD%' 
+            AND visit.SalesmanNo LIKE 'IRQ%' 
         ", [$start_time]);
 
         return empty($new_visits)? false : $new_visits;
@@ -580,7 +580,7 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.[ID] = ?
-            AND visit.SalesmanNo LIKE 'IRD%'
+            AND visit.SalesmanNo LIKE 'IRQ%'
         ", [$visit_id]);
 
         return empty($visit)? false : $visit[0];
