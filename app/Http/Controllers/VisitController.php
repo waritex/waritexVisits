@@ -193,92 +193,95 @@ class VisitController extends Controller
 
     public function task()
     {
-        // get last visit in our DB
-        $visit_time = $this->get_last_visit();
+        // get last visits in our DB for each salesman
+        $visit_times = $this->get_last_visit();
         // if error
-        if (!$visit_time) return NULL;
+        if (!$visit_times) return NULL;
         // try get new visits
-        $new_visits = $this->get_new_visits($visit_time);
-        if (!$new_visits) return NULL;
+        foreach ($visit_times as $visit_time){
+            $new_visits = $this->get_new_visits($visit_time);
+            if (!$new_visits) return NULL;
 
-        // return $visit_time;
+            // return $visit_time;
 
-        // for each new visit ask google
-        foreach ($new_visits as $visit){
-            // check if there's a duplicate
-            if ($this->check_duplicate($visit->visit_id))
-                continue;
-
-            $data = [
-                'visit_id'                      =>  $visit->visit_id,
-                'visit_start'                   =>  $visit->visit_start,
-                'visit_finish'                  =>  $visit->visit_finish,
-                'current_customer_lng'          =>  $visit->Longitude,
-                'current_customer_lat'          =>  $visit->Latitude,
-                'last_visit_id'                 =>  $visit->last_id,
-                'last_customer_lng'             =>  $visit->last_lng,
-                'last_customer_lat'             =>  $visit->last_lat,
-                'first_gps_lat'                 =>  $visit->first_gps_lat,
-                'first_gps_lng'                 =>  $visit->first_gps_lng,
-                'second_gps_lat'                =>  $visit->second_gps_lat,
-                'second_gps_lng'                =>  $visit->second_gps_lng,
-            ];
-
-            // check if first visit in day
-            if ($this->check_first_visit_inDay($data)===true){
-                $data['google_time_pessimistic'] = 0;
-                $data['google_distance'] = 0;
-                $data['last_read_distance'] = 0;
-            }
-
-            else{
-                // debug data
-                echo "\n";
-                print_r($data);
-                echo "\n";
-                // check if error on lat || lng
-                if ($this->check_error_visit_latlng($data)===true){
+            // for each new visit ask google
+            foreach ($new_visits as $visit){
+                // check if there's a duplicate
+                if ($this->check_duplicate($visit->visit_id))
                     continue;
-                }
-                // then ask google
-                // ask google
-                $res_google = $this->ask_google($data);
-                if ($res_google===false) return NULL;
 
-                // get time & distance
-                // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-                try{
-                    $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                    $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
-                }
-                catch (\Exception $exception){
-                    continue;
-                }
+                $data = [
+                    'visit_id'                      =>  $visit->visit_id,
+                    'visit_start'                   =>  $visit->visit_start,
+                    'visit_finish'                  =>  $visit->visit_finish,
+                    'current_customer_lng'          =>  $visit->Longitude,
+                    'current_customer_lat'          =>  $visit->Latitude,
+                    'last_visit_id'                 =>  $visit->last_id,
+                    'last_customer_lng'             =>  $visit->last_lng,
+                    'last_customer_lat'             =>  $visit->last_lat,
+                    'first_gps_lat'                 =>  $visit->first_gps_lat,
+                    'first_gps_lng'                 =>  $visit->first_gps_lng,
+                    'second_gps_lat'                =>  $visit->second_gps_lat,
+                    'second_gps_lng'                =>  $visit->second_gps_lng,
+                ];
 
-                $data['google_time_pessimistic'] = $g_time_pess;
-                $data['google_distance'] = $g_distance;
-
-                // check last GPS readings
-                if ($this->check_last_GPS_is_Visit($data)===true){
+                // check if first visit in day
+                if ($this->check_first_visit_inDay($data)===true){
+                    $data['google_time_pessimistic'] = 0;
+                    $data['google_distance'] = 0;
                     $data['last_read_distance'] = 0;
                 }
+
                 else{
-                    $r2_google = $this->calculateDistanceP($data);
-                    if ($r2_google===FALSE){
+                    // debug data
+                    echo "\n";
+                    print_r($data);
+                    echo "\n";
+                    // check if error on lat || lng
+                    if ($this->check_error_visit_latlng($data)===true){
+                        continue;
+                    }
+                    // then ask google
+                    // ask google
+                    $res_google = $this->ask_google($data);
+                    if ($res_google===false) return NULL;
+
+                    // get time & distance
+                    // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+                    try{
+                        $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                        $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                    }
+                    catch (\Exception $exception){
+                        continue;
+                    }
+
+                    $data['google_time_pessimistic'] = $g_time_pess;
+                    $data['google_distance'] = $g_distance;
+
+                    // check last GPS readings
+                    if ($this->check_last_GPS_is_Visit($data)===true){
                         $data['last_read_distance'] = 0;
                     }
                     else{
-                        $data['last_read_distance'] = $r2_google;
+                        $r2_google = $this->calculateDistanceP($data);
+                        if ($r2_google===FALSE){
+                            $data['last_read_distance'] = 0;
+                        }
+                        else{
+                            $data['last_read_distance'] = $r2_google;
+                        }
                     }
                 }
-            }
 
 //            print_r( $data );
 //            echo "\n";
 
-            // create
-            $this->create($data);
+                // create
+                $this->create($data);
+            }
         }
+
     }
 
     /************************************************************/
@@ -373,6 +376,8 @@ class VisitController extends Controller
      * @return array
      */
     private function get_new_visits($start_time){
+        $visit_time = $start_time->last_visit;
+        $salesman = $start_time->salesman;
         $new_visits = DB::connection('wri')->select("
       SELECT 
 	  visit.[ID]					AS visit_id
@@ -472,8 +477,8 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ?
-            AND visit.SalesmanNo LIKE 'IRQ%' 
-        ", [$start_time]);
+            AND visit.SalesmanNo = ? 
+        ", [$visit_time , $salesman]);
 
         return empty($new_visits)? false : $new_visits;
     }
@@ -591,8 +596,22 @@ class VisitController extends Controller
      */
     private function get_last_visit()
     {
-        $last_visit_time = DB::select('SELECT concat( MAX(visit_start) ) as last_visit FROM visits');
-        return empty($last_visit_time)? false : $last_visit_time[0]->last_visit;
+        // $last_visit_time = DB::select('SELECT concat( MAX(visit_start) ) as last_visit FROM visits');
+        // fix bug getting time for only one salesman
+        $last_visit_times = DB::select('SELECT 
+concat( MAX(visit_start) )   as last_visit 
+, SUBSTRING_INDEX(visit_id, "-", 1) as salesman 
+FROM visits
+GROUP BY salesman
+HAVING salesman LIKE "IRQ%"');
+        $res = [];
+        foreach ($last_visit_times as $last_visit_time){
+            if (empty($last_visit_time)){
+                continue;
+            }
+            $res[] = $last_visit_time;
+        }
+        return empty($res)? false : $res;
     }
 
     /**]
