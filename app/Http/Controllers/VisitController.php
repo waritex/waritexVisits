@@ -273,9 +273,7 @@ class VisitController extends Controller
                         }
                     }
                 }
-
-//            print_r( $data );
-//            echo "\n";
+                
 
                 // create
                 $this->create($data);
@@ -372,7 +370,7 @@ class VisitController extends Controller
 
     /**
      * get New Visits from SalesBuzz DataBase
-     * @param $stat_time
+     * @param $start_time
      * @return array
      */
     private function get_new_visits($start_time){

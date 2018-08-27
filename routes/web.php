@@ -25,3 +25,10 @@ Route::get('/get_distance2/{lat1}/{lon1}/{lat2}/{lon2}' , 'VisitController@getDi
 
 
 Route::get('/test' , 'VisitController@test');
+
+///////////////////////////////////////////////////////////////////
+///
+///
+///////////////////////////////////////////////////////////////////
+
+Route::post('/login', 'AuthController@auth');
