@@ -199,6 +199,10 @@ class VisitController extends Controller
         if (!$visit_times) return NULL;
         // try get new visits
         foreach ($visit_times as $visit_time){
+            // debug data
+            echo "\n";
+            print_r($visit_time);
+            echo "\n";
             $new_visits = $this->get_new_visits($visit_time);
             if (!$new_visits) return NULL;
 
@@ -273,7 +277,7 @@ class VisitController extends Controller
                         }
                     }
                 }
-                
+
 
                 // create
                 $this->create($data);
