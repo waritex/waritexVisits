@@ -196,7 +196,7 @@ class VisitController extends Controller
         // get last visits in our DB for each salesman
         $visit_times = $this->get_last_visit();
         // debug data
-        echo "\n";
+        echo "\n"; 
         print_r($visit_times);
         echo "\n";
         // if error
