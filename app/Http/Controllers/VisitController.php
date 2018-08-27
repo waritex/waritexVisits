@@ -608,6 +608,10 @@ GROUP BY salesman
 HAVING salesman LIKE "IRQ%"');
         $res = [];
         foreach ($last_visit_times as $last_visit_time){
+            // debug data
+            echo "\n";
+            print_r($last_visit_time);
+            echo "\n";
             if (empty($last_visit_time)){
                 continue;
             }
