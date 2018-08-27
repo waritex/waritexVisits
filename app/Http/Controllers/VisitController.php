@@ -195,10 +195,6 @@ class VisitController extends Controller
     {
         // get last visits in our DB for each salesman
         $visit_times = $this->get_last_visit();
-        // debug data
-        echo "\n"; 
-        print_r($visit_times);
-        echo "\n";
         // if error
         if (!$visit_times) return NULL;
         // try get new visits
@@ -609,10 +605,6 @@ HAVING salesman LIKE "IRQ%"');
         $res = [];
         foreach ($last_visit_times as $last_visit_time){
             if (empty($last_visit_time)){
-                // debug data
-                echo "\n";
-                print_r('ssssssssss');
-                echo "\n";
                 continue;
             }
             $res[] = $last_visit_time;
