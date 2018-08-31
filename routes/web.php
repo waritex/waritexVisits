@@ -28,7 +28,9 @@ Route::get('/test' , 'VisitController@test');
 
 ///////////////////////////////////////////////////////////////////
 ///
+/// Map Application
 ///
 ///////////////////////////////////////////////////////////////////
 
 Route::post('/login', 'AuthController@auth');
+Route::post('/get_customers','MapController@get_customers');
