@@ -34,3 +34,4 @@ Route::get('/test' , 'VisitController@test');
 
 Route::post('/login', 'AuthController@auth');
 Route::post('/get_customers','MapController@get_customers');
+Route::get('/get_customers','MapController@get_customers');
