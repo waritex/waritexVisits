@@ -27,7 +27,7 @@ class MapController extends Controller
         // get today's visits:
         if (! $visits = $this->get_today_visits($salesman,$today)){
             //return $todayCustomers;
-            return response()->json('No Visits Till Now',200);
+            return response()->json('No Visits Till Now',500);
         }
 
         $res = [];
