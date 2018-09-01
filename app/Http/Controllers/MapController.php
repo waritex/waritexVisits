@@ -16,14 +16,14 @@ class MapController extends Controller
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
         //----------------------- test Value
-        $today = "2018-09-01";
+//        $today = "2018-09-01";
         //----------------------- test Value
 //        $salesman = "IRQ004";
         // get customers's route:
         if (!$todayCustomers = $this->get_today_routes($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
         //----------------------- test Value
-        $today = "2018-07-31";
+//        $today = "2018-07-31";
         // get today's visits:
         if (! $visits = $this->get_today_visits($salesman,$today)){
             //return $todayCustomers;
