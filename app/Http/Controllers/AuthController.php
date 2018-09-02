@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\MapUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function auth(Request $request)
+    public function auth_old(Request $request)
     {
         $data = $this->validate($request , [
            'username'   => ['required','string'],
@@ -20,4 +21,22 @@ class AuthController extends Controller
             return response()->json('BAD',401);
         }
     }
+
+    public function auth(Request $request)
+    {
+        $data = $this->validate($request , [
+            'username'   => ['required','string'],
+        ]);
+
+        $username = $data['username'];
+
+        $user = MapUser::where('username', $username)->first();
+        if ( $user ){
+            return response()->json($user,200);
+        }
+        else{
+            throw new \Exception('BAD Username Or Password',401);
+        }
+    }
+
 }
