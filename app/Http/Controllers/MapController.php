@@ -38,8 +38,9 @@ class MapController extends Controller
             $customer_id = $customer->CustomerID;
             foreach ($visits as $visit){
                 if ($visit->customer_id == $customer_id){
-                    if ($visit->visit_date == $today){
-                        $customer->visited = 1;
+                    $customer->visited = 1;
+                    if ($visit->visit_date != $today){
+                        continue 2;
                     }
                     break;
                 }
