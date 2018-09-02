@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Route;
 use Illuminate\Http\Request;
 use DB;
-use Carbon\Carbon;
 
 class MapController extends Controller
 {
@@ -20,13 +19,17 @@ class MapController extends Controller
 //        $today = "2018-09-01";
         //----------------------- test Value
 //        $salesman = "IRQ004";
+        /////////////////////////////////////
         // get customers's route:
         if (!$todayCustomers = $this->get_today_routes($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
+
         //----------------------- test Value
 //        $today = "2018-07-31";
+        ////////////////////////////////
         // get today's visits:
         $date_range = now()->addDays(-6)->toDateString();
+//        $date_range = "2018-09-01";
         if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
             return $todayCustomers;
 //            return response()->json('No Visits Till Now',500);
