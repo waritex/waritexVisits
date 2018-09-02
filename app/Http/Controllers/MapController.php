@@ -71,7 +71,7 @@ class MapController extends Controller
         
         WHERE        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? )
 			  AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
-        " , [$date , $dateRange , $salesman]);
+        " , [$dateRange , $date , $salesman]);
 
         return empty($visits)? false : $visits;
     }
