@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Route;
 use Illuminate\Http\Request;
 use DB;
+use Carbon\Carbon;
 
 class MapController extends Controller
 {
@@ -25,7 +26,8 @@ class MapController extends Controller
         //----------------------- test Value
 //        $today = "2018-07-31";
         // get today's visits:
-        if (! $visits = $this->get_today_visits($salesman,$today)){
+        $date_range = now()->addDays(-6)->toDateString();
+        if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
             return $todayCustomers;
 //            return response()->json('No Visits Till Now',500);
         }
@@ -36,7 +38,9 @@ class MapController extends Controller
             $customer_id = $customer->CustomerID;
             foreach ($visits as $visit){
                 if ($visit->customer_id == $customer_id){
-                    $customer->visited = 1;
+                    if ($visit->visit_date == $today){
+                        $customer->visited = 1;
+                    }
                     break;
                 }
             }
@@ -56,7 +60,7 @@ class MapController extends Controller
         return $routes;
     }
 
-    private function get_today_visits($salesman , $date){
+    private function get_today_visits($salesman , $date , $dateRange){
         $visits = DB::connection('wri')->select("
         SELECT 
         dbo.V_HH_VisitDuration.ID               AS visit_id
@@ -65,9 +69,9 @@ class MapController extends Controller
          
         FROM dbo.V_HH_VisitDuration
         
-        WHERE        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) = ? )
+        WHERE        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? )
 			  AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
-        " , [$date , $salesman]);
+        " , [$date , $dateRange , $salesman]);
 
         return empty($visits)? false : $visits;
     }
