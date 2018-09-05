@@ -38,11 +38,10 @@ class MapController extends Controller
         $res = [];
 
         foreach ($todayCustomers as $customer){
-            $customer_id = $customer->CustomerID;
             foreach ($visits as $visit){
-                if ($visit->customer_id == $customer_id){
+                if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
                     $customer->visited = 1;
-                    if ($visit->visit_date != $today){
+                    if ( trim($visit->visit_date) !== $today){
                         continue 2;
                     }
                     break;
