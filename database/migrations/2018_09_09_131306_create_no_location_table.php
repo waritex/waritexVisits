@@ -22,9 +22,9 @@ class CreateNoLocationTable extends Migration
             $table->string('district');
             $table->string('city');
             $table->string('area');
-            $table->string('address');
-            $table->string('tel');
-            $table->string('mobile');
+            $table->string('address')->nullable();
+            $table->string('tel')->nullable();
+            $table->string('mobile')->nullable();
             $table->date('date');
 
         });
