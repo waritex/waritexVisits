@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Nolocation;
 use App\Route;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use DB;
 
@@ -53,6 +55,16 @@ class MapController extends Controller
         return $res;
     }
 
+    public function get_no_loc(Request $request){
+        $salesman = $request->post('salesman',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Ask Waritex For This',500);
+        $today = now()->toDateString();
+        if (!$todayCustomers = $this->get_no_location_customers($salesman,$today))
+            return response()->json('No Customers In Today\'s Route',500);
+        return $todayCustomers;
+    }
+
 
     private function get_today_routes($salesman , $date){
         $routes = Route::where('Date',$date)
@@ -78,5 +90,81 @@ class MapController extends Controller
 
         return empty($visits)? false : $visits;
     }
+
+    private function get_no_location_customers($salesman , $date)
+    {
+        $customers = Nolocation::where('Date',$date)
+            ->where('SalesmanCode',$salesman)
+            ->get();
+        if ($customers->isEmpty())
+            return false;
+        return $customers;
+    }
+
+    ///////////////////////////////////////////////
+
+
+    public function get_week_number(){
+        $today = Carbon::today();
+        $today = Carbon::createFromDate(2018,1,6);
+
+        $weekd = $today->addDay()->dayOfWeek+1;
+        print_r('weekd '.$weekd);print_r('<br>');
+        $yeard = $today->addDays(7)->subDays($weekd)->year;
+        print_r('yeard '.$yeard);print_r('<br>');
+        $xx = Carbon::createFromDate($yeard,1,1);
+        print_r($xx);print_r('<br>');
+        $x1 = $today->subDays($weekd);
+        print_r($x1);print_r('<br>');
+        print_r($xx->dayOfYear+1);print_r('<br>');
+        $x2 = $today->subDays($xx->dayOfYear+1);
+        print_r($x2);print_r('<br>');
+        $yy = $today->subDays($weekd)->subDays($xx->dayOfYear+1);
+        $vv = $yy->dayOfYear+1;
+        dd((INT)($vv/7));
+        $fullStart = Carbon::today()->startOfYear()->isSaturday();
+        if ($fullStart)
+            $weekNo = $today->weekOfYear;
+        else
+            $weekNo = $today->dayOfYear+1;
+
+
+//        echo $today->formatLocalized('%w');echo '<br>';
+
+        print_r($today);print_r('<br>');
+        print_r($today->isSaturday());print_r('<br>');
+        print_r($today->toDayDateTimeString());print_r('<br>');
+        print_r((($weekNo/7)%4+1));print_r('<br>');
+        print_r('Salesbuzz Week '.(($weekNo/7)%4+1));print_r('<br>');
+
+        dd($weekNo);
+        return $today;
+    }
+
+
+    function getDayOfWeek(\DateTimeImmutable $date)
+    {
+        return ($date->format('N') + 2) % 7;
+    }
+
+    function getWeekNumber(\DatetimeImmutable $date)
+    {
+        // Recursive function that loops through every day until it gets the start of a week
+        $startOfWeek = function (\DateTimeImmutable $date) use (&$startOfWeek) {
+            return ($this->getDayOfWeek($date) === 1)
+                ? $date : $startOfWeek($date->modify('+1 day'));
+        };
+
+        // The z option tells us what day of the year this is,
+        // not a 100% sure this step is necessary
+        if ($this->getDayOfWeek($date === 1)) {
+            $nbDays = $date->format('z');
+        } else {
+            $nbDays = $startOfWeek($date->modify('-7 days'))->format('z');
+        }
+        // Divides by the number of days in a week to get the number of weeks
+        return ceil($nbDays / 7);
+    }
+
 
 }

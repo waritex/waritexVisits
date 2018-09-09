@@ -282,6 +282,52 @@ class VisitController extends Controller
 
     }
 
+    public function test_task()
+    {
+        // get last visits in our DB for each salesman
+        $visit_times = $this->get_last_visit();
+
+        // if error
+        if (!$visit_times) return NULL;
+        // try get new visits
+        foreach ($visit_times as $visit_time){
+            $new_visits = $this->get_new_visits($visit_time);
+            dd($new_visits);
+            print_r('<br>');
+            print_r('<br>');
+            if (!$new_visits) return NULL;
+
+            // return $visit_time;
+
+            // for each new visit ask google
+            foreach ($new_visits as $visit){
+                // check if there's a duplicate
+                if ($this->check_duplicate($visit->visit_id))
+                    continue;
+
+                $data = [
+                    'visit_id'                      =>  $visit->visit_id,
+                    'visit_start'                   =>  $visit->visit_start,
+                    'visit_finish'                  =>  $visit->visit_finish,
+                    'current_customer_lng'          =>  $visit->Longitude,
+                    'current_customer_lat'          =>  $visit->Latitude,
+                    'last_visit_id'                 =>  $visit->last_id,
+                    'last_customer_lng'             =>  $visit->last_lng,
+                    'last_customer_lat'             =>  $visit->last_lat,
+                    'first_gps_lat'                 =>  $visit->first_gps_lat,
+                    'first_gps_lng'                 =>  $visit->first_gps_lng,
+                    'second_gps_lat'                =>  $visit->second_gps_lat,
+                    'second_gps_lng'                =>  $visit->second_gps_lng,
+                ];
+                // debug data
+                echo "\n";
+                print_r($data);
+                echo "\n";
+            }
+        }
+
+    }
+
     /************************************************************/
     // Private Functions
     /************************************************************/
