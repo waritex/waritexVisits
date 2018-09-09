@@ -24,7 +24,10 @@ Route::get('/get_distance/{lat1}/{lon1}/{lat2}/{lon2}/{unit}' , 'VisitController
 Route::get('/get_distance2/{lat1}/{lon1}/{lat2}/{lon2}' , 'VisitController@getDistance');
 
 
-Route::get('/test' , 'VisitController@test');
+Route::get('/test' , 'VisitController@test_task');
+
+
+Route::get('/date' , 'MapController@get_week_number');
 
 ///////////////////////////////////////////////////////////////////
 ///
@@ -34,4 +37,7 @@ Route::get('/test' , 'VisitController@test');
 
 Route::post('/login', 'AuthController@auth');
 Route::post('/get_customers','MapController@get_customers');
+Route::post('/get_noloc','MapController@get_no_loc');
+
+//Test Routes:
 Route::get('/get_customers','MapController@get_customers');
