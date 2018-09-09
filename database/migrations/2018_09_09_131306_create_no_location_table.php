@@ -25,6 +25,7 @@ class CreateNoLocationTable extends Migration
             $table->string('address');
             $table->string('tel');
             $table->string('mobile');
+            $table->date('date');
 
         });
     }
