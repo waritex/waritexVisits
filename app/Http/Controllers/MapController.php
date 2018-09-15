@@ -19,34 +19,21 @@ class MapController extends Controller
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
-        //----------------------- test Value
-        $today = "2018-09-13";
-        //----------------------- test Value
-//        $salesman = "IRQ004";
-        /////////////////////////////////////
         // get customers's route:
         if (!$todayCustomers = $this->get_today_routes($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
-
-        //----------------------- test Value
-//        $today = "2018-07-31";
-        ////////////////////////////////
         // get today's visits:
         $date_range = now()->addDays(-6)->toDateString();
-//        $date_range = "2018-09-01";
         if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
             return $todayCustomers;
-//            return response()->json('No Visits Till Now',500);
         }
-
         $res = [];
-
         foreach ($todayCustomers as $customer){
             foreach ($visits as $visit){
                 if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
                     $customer->visited = 1;
                     if ( trim($visit->visit_date) !== $today){
-//                        continue 2;
+                        continue 2;
                     }
                     break;
                 }
@@ -62,16 +49,13 @@ class MapController extends Controller
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
-        $today = "2018-09-06"; //------------------------------Test Value you should delete it
         if (!$todayCustomers = $this->get_no_location_customers($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
         $date_range = now()->addDays(-6)->toDateString();
         if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
             return $todayCustomers;
         }
-
         $res = [];
-
         foreach ($todayCustomers as $customer){
             foreach ($visits as $visit){
                 if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
