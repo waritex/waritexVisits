@@ -39,4 +39,25 @@ class AuthController extends Controller
         }
     }
 
+    public function get_all_salesman(Request $request)
+    {
+        $data = $this->validate($request , [
+            'code'   => ['required','string'],
+        ]);
+        $code = $data['code'];
+        $supervisor = MapUser::where('code', $code)->first();
+        $salesmans = $this->get_all_supervisor_salesman($supervisor);
+        if ( $salesmans ){
+            return response()->json($salesmans,200);
+        }
+        else{
+            throw new \Exception('Supervisor Has No Salesmans',401);
+        }
+    }
+
+    private function get_all_supervisor_salesman($supervisor)
+    {
+        return MapUser::where('buid',$supervisor->buid)->where('code','!=',$supervisor->code)->get();
+    }
+
 }
