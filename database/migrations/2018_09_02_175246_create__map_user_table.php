@@ -22,6 +22,8 @@ class CreateMapUserTable extends Migration
             $table->string('name')
                 ->nullable()
                 ->unique();
+            $table->boolean('supervisor')->default(false);
+            $table->integer('buid');
             $table->timestamps();
         });
     }

@@ -8,4 +8,5 @@ class MapUser extends Model
 {
     protected $table = 'mapUsers';
     protected $guarded = [];
+    protected $casts = ['supervisor'=>'boolean'];
 }

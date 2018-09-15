@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\MapUser;
 use App\Nolocation;
 use App\Route;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MapController extends Controller
 {
@@ -18,7 +20,7 @@ class MapController extends Controller
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
         //----------------------- test Value
-//        $today = "2018-09-01";
+        $today = "2018-09-13";
         //----------------------- test Value
 //        $salesman = "IRQ004";
         /////////////////////////////////////
@@ -44,7 +46,7 @@ class MapController extends Controller
                 if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
                     $customer->visited = 1;
                     if ( trim($visit->visit_date) !== $today){
-                        continue 2;
+//                        continue 2;
                     }
                     break;
                 }
@@ -60,6 +62,7 @@ class MapController extends Controller
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
+        $today = "2018-09-06"; //------------------------------Test Value you should delete it
         if (!$todayCustomers = $this->get_no_location_customers($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
         $date_range = now()->addDays(-6)->toDateString();
@@ -120,6 +123,29 @@ class MapController extends Controller
             return false;
         return $customers;
     }
+
+    // Not Used Yet........................................
+    public function get_custoemrs_supervisor(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Ask Waritex For This',500);
+        // check he's a supervisor
+        $supervisor = MapUser::where('code',$salesman)->where('supervisor',1)->first();
+        if(!$supervisor)
+            return;
+
+        // get all his salesmans
+        $salesmans = MapUser::where('buid',$supervisor->buid)->get('code');
+
+        // get all customers sorted by salesman
+        $todayCustomers = Route::whereIn('SalesmanCode',$salesmans)->orderBy('SalesmanCode')->get();
+
+        // get all visits
+
+        // format response
+    }
+
 
     ///////////////////////////////////////////////
 
