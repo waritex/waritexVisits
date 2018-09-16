@@ -47,7 +47,7 @@ class MapController extends Controller
     public function get_no_loc(Request $request){
         $salesman = $request->post('salesman',false);
         if (!$salesman)
-            return response()->json('Error In User Please Ask Waritex For This',500);
+            return response()->json('Error In User Please Retry Or Select Salesman',500);
         $today = now()->toDateString();
         if (!$todayCustomers = $this->get_no_location_customers($salesman,$today))
             return response()->json('No Customers In Today\'s Route',500);
