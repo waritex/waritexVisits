@@ -38,7 +38,9 @@ class VisitGoogle extends Command
      */
     public function handle()
     {
+        $stDate = $this->ask('please Enter Start Date: ');
+        $enDate = $this->ask('please Enter End Date: ');
         $controller = new VisitController();
-        $controller->test_task();
+        $controller->fixTaskManually($stDate, $enDate);
     }
 }

@@ -200,9 +200,7 @@ class VisitController extends Controller
         // try get new visits
         foreach ($visit_times as $visit_time){
             $new_visits = $this->get_new_visits($visit_time);
-            if (!$new_visits) return NULL;
-
-            // return $visit_time;
+            if (!$new_visits) continue;
 
             // for each new visit ask google
             foreach ($new_visits as $visit){
@@ -234,30 +232,40 @@ class VisitController extends Controller
 
                 else{
                     // debug data
+                    /*
                     echo "\n";
                     print_r($data);
                     echo "\n";
+                    */
                     // check if error on lat || lng
                     if ($this->check_error_visit_latlng($data)===true){
-                        continue;
-                    }
-                    // then ask google
-                    // ask google
-                    $res_google = $this->ask_google($data);
-                    if ($res_google===false) return NULL;
-
-                    // get time & distance
-                    // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-                    try{
-                        $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                        $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
-                    }
-                    catch (\Exception $exception){
-                        continue;
+                        $data['google_time_pessimistic'] = 0;
+                        $data['google_distance'] = 0;
                     }
 
-                    $data['google_time_pessimistic'] = $g_time_pess;
-                    $data['google_distance'] = $g_distance;
+                    else{
+                        // then ask google
+                        // ask google
+                        $res_google = $this->ask_google($data);
+                        if ($res_google===false) {
+                            $data['google_time_pessimistic'] = 0;
+                            $data['google_distance'] = 0;
+                        }
+                        else{
+                            // get time & distance
+                            // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+                            try{
+                                $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                                $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                            }
+                            catch (\Exception $exception){
+                                $g_time_pess=0;
+                                $g_distance=0;
+                            }
+                            $data['google_time_pessimistic'] = $g_time_pess;
+                            $data['google_distance'] = $g_distance;
+                        }
+                    }
 
                     // check last GPS readings
                     if ($this->check_last_GPS_is_Visit($data)===true){
@@ -282,6 +290,98 @@ class VisitController extends Controller
 
     }
 
+    public function fixTaskManually($startDate , $endDate)
+    {
+        // try get new visits
+        $new_visits = $this->get_visits_bet_dates($startDate , $endDate);
+        foreach ($new_visits as $k => $visit){
+            print_r('visit: '.$k);
+            echo "\n";
+            // check if there's a duplicate
+            if ($this->check_duplicate($visit->visit_id))
+                continue;
+
+            $data = [
+                'visit_id'                      =>  $visit->visit_id,
+                'visit_start'                   =>  $visit->visit_start,
+                'visit_finish'                  =>  $visit->visit_finish,
+                'current_customer_lng'          =>  $visit->Longitude,
+                'current_customer_lat'          =>  $visit->Latitude,
+                'last_visit_id'                 =>  $visit->last_id,
+                'last_customer_lng'             =>  $visit->last_lng,
+                'last_customer_lat'             =>  $visit->last_lat,
+                'first_gps_lat'                 =>  $visit->first_gps_lat,
+                'first_gps_lng'                 =>  $visit->first_gps_lng,
+                'second_gps_lat'                =>  $visit->second_gps_lat,
+                'second_gps_lng'                =>  $visit->second_gps_lng,
+            ];
+
+            // check if first visit in day
+            if ($this->check_first_visit_inDay($data)===true){
+                $data['google_time_pessimistic'] = 0;
+                $data['google_distance'] = 0;
+                $data['last_read_distance'] = 0;
+            }
+
+            else{
+                // debug data
+                /*
+                echo "\n";
+                print_r($data);
+                echo "\n";
+                */
+                // check if error on lat || lng
+                if ($this->check_error_visit_latlng($data)===true){
+                    $data['google_time_pessimistic'] = 0;
+                    $data['google_distance'] = 0;
+                }
+
+                else{
+                    // then ask google
+                    // ask google
+                    $res_google = $this->ask_google($data);
+                    if ($res_google===false) {
+                        $data['google_time_pessimistic'] = 0;
+                        $data['google_distance'] = 0;
+                    }
+                    else{
+                        // get time & distance
+                        // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+                        try{
+                            $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                            $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                        }
+                        catch (\Exception $exception){
+                            $g_time_pess=0;
+                            $g_distance=0;
+                        }
+                        $data['google_time_pessimistic'] = $g_time_pess;
+                        $data['google_distance'] = $g_distance;
+                    }
+                }
+
+                // check last GPS readings
+                if ($this->check_last_GPS_is_Visit($data)===true){
+                    $data['last_read_distance'] = 0;
+                }
+                else{
+                    $r2_google = $this->calculateDistanceP($data);
+                    if ($r2_google===FALSE){
+                        $data['last_read_distance'] = 0;
+                    }
+                    else{
+                        $data['last_read_distance'] = $r2_google;
+                    }
+                }
+            }
+
+            // create
+            $this->create($data);
+            print_r('created...');
+            echo "\n";
+        }
+    }
+
     public function test_task()
     {
         // get last visits in our DB for each salesman
@@ -291,10 +391,12 @@ class VisitController extends Controller
         if (!$visit_times) return NULL;
         // try get new visits
         foreach ($visit_times as $visit_time){
+
             $new_visits = $this->get_new_visits($visit_time);
-            dd($new_visits);
-            print_r('<br>');
-            print_r('<br>');
+
+//            dd($new_visits);
+//            print_r('<br>');
+//            print_r('<br>');
             if (!$new_visits) return NULL;
 
             // return $visit_time;
@@ -321,7 +423,9 @@ class VisitController extends Controller
                 ];
                 // debug data
                 echo "\n";
+                echo "<pre>";
                 print_r($data);
+                echo "</pre>";
                 echo "\n";
             }
         }
@@ -520,9 +624,114 @@ class VisitController extends Controller
 
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
-      WHERE visit.starttime > ?
-            AND visit.SalesmanNo = ? 
+      WHERE visit.starttime > ? 
+            AND visit.SalesmanNo = ?  
         ", [$visit_time , $salesman]);
+
+        return empty($new_visits)? false : $new_visits;
+    }
+
+    private function get_visits_bet_dates($startDate , $endDate){
+        $new_visits = DB::connection('wri')->select("
+      SELECT 
+	  visit.[ID]					AS visit_id
+      ,visit.[starttime]			AS visit_start
+      ,visit.[finishtime]			AS visit_finish
+	  ,verify.[Longitude]			AS Longitude
+	  ,verify.[Latitude]			AS Latitude
+	  ,		(select top 1  ID
+			from V_HH_VisitDuration 
+			INNER JOIN dbo.HH_VisitVerification ON V_HH_VisitDuration.ID = dbo.HH_VisitVerification.VisitNo
+			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
+			and visit.salesmanno = V_HH_VisitDuration.salesmanno
+			and visit.starttime > V_HH_VisitDuration.starttime
+			order by starttime desc
+			) as last_id
+		,	(select top 1  [Longitude]
+			from V_HH_VisitDuration 
+			INNER JOIN dbo.HH_VisitVerification ON V_HH_VisitDuration.ID = dbo.HH_VisitVerification.VisitNo
+			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
+			and visit.salesmanno = V_HH_VisitDuration.salesmanno
+			and visit.starttime > V_HH_VisitDuration.starttime
+			order by starttime desc
+			) as last_lng
+		,	(select top 1 [Latitude]
+			from V_HH_VisitDuration 
+			INNER JOIN dbo.HH_VisitVerification ON V_HH_VisitDuration.ID = dbo.HH_VisitVerification.VisitNo
+			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
+			and visit.salesmanno = V_HH_VisitDuration.salesmanno
+			and visit.starttime > V_HH_VisitDuration.starttime
+			order by starttime desc
+			) as last_lat
+, (
+			SELECT TOP 1 T.Latitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lat
+			, (
+			SELECT TOP 1 T.Longitude
+			FROM 
+				(
+				SELECT TOP 1 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS first_gps_lng
+			,(
+			SELECT TOP 1 T.Latitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lat
+			,(
+			SELECT TOP 1 T.Longitude 
+			FROM 
+				(
+				SELECT TOP 2 (UTCDateTime) , (SatelliteCount) , (SatellitesInView) , Latitude, Longitude
+				FROM [dbo].[hh_salesman_gps] as gps
+				WHERE 
+				CAST(gps.UTCDateTime as Date) = CAST(visit.starttime as Date)
+				AND gps.SalesManNo = visit.SalesmanNo
+				AND gps.UTCDateTime < visit.starttime
+				ORDER BY UTCDateTime DESC
+				) AS T
+			WHERE  T.SatelliteCount is NULL
+				   AND T.SatellitesInView is NULL
+			ORDER BY T.UTCDateTime ASC
+			) AS second_gps_lng
+
+      FROM [dbo].[V_HH_VisitDuration] as visit
+      INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
+      WHERE visit.starttime >= ? AND visit.starttime < ?  AND visit.SalesmanNo like 'IRQ%'
+        ", [$startDate , $endDate]);
 
         return empty($new_visits)? false : $new_visits;
     }
