@@ -48,4 +48,4 @@ Route::get('/get_customers','MapController@get_customers');
 ///////////////////////////////////////////////////////////////////
 Route::get('/test' , 'VisitController@test_task');
 
-Route::get('/date' , 'MapController@get_week_number');
+Route::get('/date' , 'MapController@get_today_name');
