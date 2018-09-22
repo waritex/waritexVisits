@@ -39,7 +39,7 @@ Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
 Route::post('/get_customers','MapController@get_customers');
 Route::post('/get_noloc','MapController@get_no_loc');
 //Test Routes:
-Route::get('/get_customers','MapController@get_customers');
+Route::get('/get_customers','MapController@get_customerssss');
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 ///
