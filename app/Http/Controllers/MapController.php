@@ -232,4 +232,38 @@ class MapController extends Controller
         }
     }
 
+    public function get_customerssss(Request $request, $salesman)
+    {
+        $today = now()->toDateString();
+        $weekNumber = $this->get_salesbuzz_week_number();
+        $dayString = $this->get_today_name();
+        // get customers's route:
+        if (!$todayCustomers = $this->get_today_routes_from_salesbuzz($salesman , $weekNumber , $dayString))
+            return response()->json('No Customers In Today\'s Route',500);
+        // get today's visits:
+        $date_range = now()->addDays(-6)->toDateString();
+        if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
+            return $todayCustomers;
+        }
+        $res = [];
+        foreach ($todayCustomers as $customer){
+            foreach ($visits as $visit){
+                if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
+                    $customer->visited = 1;
+                    if ( trim($visit->visit_date) !== $today){
+                        continue 2;
+                    }
+                    break;
+                }
+            }
+            $res[] = $customer;
+        }
+
+        return $res;
+        //$this->utf8_encode_deep($res);
+        $res = self::convert_from_latin1_to_utf8_recursively($res);
+        return $res;
+//        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
+    }
+
 }
