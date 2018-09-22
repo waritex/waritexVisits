@@ -42,7 +42,7 @@ class MapController extends Controller
             $res[] = $customer;
         }
         print_r('<pre>');
-        print_r($res);
+        echo($res);
         print_r('</pre>');
         return;
         //$this->utf8_encode_deep($res);
