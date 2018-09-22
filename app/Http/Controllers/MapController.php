@@ -43,7 +43,7 @@ class MapController extends Controller
         }
         //$this->utf8_encode_deep($res);
         $res = self::convert_from_latin1_to_utf8_recursively($res);
-//        return $res;
+        return $res;
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
     }
 
