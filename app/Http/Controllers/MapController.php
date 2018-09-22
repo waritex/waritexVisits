@@ -25,7 +25,7 @@ class MapController extends Controller
             return response()->json('No Customers In Today\'s Route',500);
         // get today's visits:
         $date_range = now()->addDays(-6)->toDateString();
-        if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
+        if (! $visits = $this->get_today_visits_ordered($salesman,$today,$date_range)){
             return $todayCustomers;
         }
         $res = [];
@@ -33,6 +33,7 @@ class MapController extends Controller
             foreach ($visits as $visit){
                 if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
                     $customer->visited = 1;
+                    $customer->visit_info = $visit;
                     if ( trim($visit->visit_date) !== $today){
                         continue 2;
                     }
@@ -42,9 +43,6 @@ class MapController extends Controller
             $res[] = $customer;
         }
 
-        return $res;
-        //$this->utf8_encode_deep($res);
-        $res = self::convert_from_latin1_to_utf8_recursively($res);
         return $res;
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
     }
@@ -123,6 +121,24 @@ class MapController extends Controller
         
         WHERE        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? )
 			  AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
+        " , [$dateRange , $date , $salesman]);
+
+        return empty($visits)? false : $visits;
+    }
+
+    private function get_today_visits_ordered($salesman , $date , $dateRange){
+        $visits = DB::connection('wri')->select("
+        SELECT 
+          dbo.V_HH_VisitDuration.ID					        AS visit_id
+        , dbo.V_HH_VisitDuration.CUstomerNo			        AS customer_id
+        , CAST( dbo.V_HH_VisitDuration.starttime AS Date )  AS visit_date
+		, CAST( dbo.V_HH_VisitDuration.starttime AS Time )  AS visit_time
+        , row_number() OVER (ORDER BY starttime asc)        AS 'order'			 
+        FROM dbo.V_HH_VisitDuration
+        
+        WHERE 
+        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? ) AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
+		ORDER BY visit_time ASC	  
         " , [$dateRange , $date , $salesman]);
 
         return empty($visits)? false : $visits;
