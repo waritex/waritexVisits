@@ -214,7 +214,7 @@ class MapController extends Controller
     public static function convert_from_latin1_to_utf8_recursively($dat)
     {
         if (is_string($dat)) {
-            return mb_convert_encoding($dat, 'HTML-ENTITIES','UCS-2LE');
+            return mb_convert_encoding($dat, 'UTF-8', 'UTF-8');
             //($dat);
         } elseif (is_array($dat)) {
             $ret = [];
