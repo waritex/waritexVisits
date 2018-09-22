@@ -41,8 +41,9 @@ class MapController extends Controller
             }
             $res[] = $customer;
         }
-        $this->utf8_encode_deep($res);
-        return response()->json($res , 200);
+        //$this->utf8_encode_deep($res);
+        $data = convert_from_latin1_to_utf8_recursively($res);
+        return response()->json($data , 200);
     }
 
     public function get_no_loc(Request $request){
@@ -207,6 +208,23 @@ class MapController extends Controller
             foreach ($vars as $var) {
                 $this->utf8_encode_deep($input->$var);
             }
+        }
+    }
+    public static function convert_from_latin1_to_utf8_recursively($dat)
+    {
+        if (is_string($dat)) {
+            return utf8_encode($dat);
+        } elseif (is_array($dat)) {
+            $ret = [];
+            foreach ($dat as $i => $d) $ret[ $i ] = self::convert_from_latin1_to_utf8_recursively($d);
+
+            return $ret;
+        } elseif (is_object($dat)) {
+            foreach ($dat as $i => $d) $dat->$i = self::convert_from_latin1_to_utf8_recursively($d);
+
+            return $dat;
+        } else {
+            return $dat;
         }
     }
 
