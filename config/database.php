@@ -86,7 +86,6 @@ return [
             'username' => env('WR_DB_USERNAME', 'forge'),
             'password' => env('WR_DB_PASSWORD', ''),
             'charset' => 'utf8',
-            'collation' => 'SQL_Latin1_General_CP1256_CI_AS',
             'prefix' => '',
         ],
 
