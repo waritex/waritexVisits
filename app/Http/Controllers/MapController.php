@@ -42,9 +42,7 @@ class MapController extends Controller
             $res[] = $customer;
         }
 
-        dd($res);
-
-        return;
+        return $res;
         //$this->utf8_encode_deep($res);
         $res = self::convert_from_latin1_to_utf8_recursively($res);
         return $res;
