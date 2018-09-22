@@ -41,7 +41,7 @@ class MapController extends Controller
             }
             $res[] = $customer;
         }
-
+        $this->utf8_encode_deep($res);
         return response()->json($res , 200);
     }
 
@@ -191,5 +191,23 @@ class MapController extends Controller
     }
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
+
+    function utf8_encode_deep(&$input) {
+        if (is_string($input)) {
+            $input = utf8_encode($input);
+        } else if (is_array($input)) {
+            foreach ($input as &$value) {
+                $this->utf8_encode_deep($value);
+            }
+
+            unset($value);
+        } else if (is_object($input)) {
+            $vars = array_keys(get_object_vars($input));
+
+            foreach ($vars as $var) {
+                $this->utf8_encode_deep($input->$var);
+            }
+        }
+    }
 
 }
