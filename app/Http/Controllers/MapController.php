@@ -8,7 +8,6 @@ use App\Route;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class MapController extends Controller
 {
@@ -19,8 +18,10 @@ class MapController extends Controller
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
+        $weekNumber = $this->get_salesbuzz_week_number();
+        $dayString = $this->get_today_name();
         // get customers's route:
-        if (!$todayCustomers = $this->get_today_routes($salesman,$today))
+        if (!$todayCustomers = $this->get_today_routes_from_salesbuzz($salesman , $weekNumber , $dayString))
             return response()->json('No Customers In Today\'s Route',500);
         // get today's visits:
         $date_range = now()->addDays(-6)->toDateString();
@@ -82,6 +83,31 @@ class MapController extends Controller
         return $routes;
     }
 
+    private function get_today_routes_from_salesbuzz($salesman , $weekNum , $day){
+        $routes = DB::connection('wri')->select("
+      SELECT 
+       V_JPlans.[AssignedTO]			as SalesmanCode
+      ,V_JPlans.[CustomerID]			as CustomerID
+	  ,HH_Customer.[CustomerNameA]		as CustomerName
+	  ,HH_Customer.[Latitude]			as Lat
+      ,HH_Customer.[Longitude]			as Lng
+      --,V_JPlans.[StartWeek]
+      --,V_JPlans.[sat]
+      --,V_JPlans.[sun]
+      --,V_JPlans.[mon]
+      --,V_JPlans.[tue]
+      --,V_JPlans.[wed]
+      --,V_JPlans.[thu]
+      --,V_JPlans.[fri]
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+      WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
+      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
+        " , [$salesman , $weekNum]);
+
+        return empty($routes)? false : $routes;
+    }
+
     private function get_today_visits($salesman , $date , $dateRange){
         $visits = DB::connection('wri')->select("
         SELECT 
@@ -132,69 +158,38 @@ class MapController extends Controller
 
 
     ///////////////////////////////////////////////
+    // Date Functions
+    ///////////////////////////////////////////////
+    /**
+     * Get SalesBuzz Week Number for Journey/Route
+     * @return int
+     * get (number of days in the year) - (number of days in the first week of year if the year doesn't starts on Saturday)
+     */
+    public function get_salesbuzz_week_number(){
+        /**
+         * dayOfWeek+1          1 (for Sunday) through 7 (for Saturday)
+         * dayOfYear            0 through 365 (for normal years)
+         */
 
-
-    public function get_week_number(){
         $today = Carbon::today();
-        $today = Carbon::createFromDate(2018,1,6);
 
-        $weekd = $today->addDay()->dayOfWeek+1;
-        print_r('weekd '.$weekd);print_r('<br>');
-        $yeard = $today->addDays(7)->subDays($weekd)->year;
-        print_r('yeard '.$yeard);print_r('<br>');
-        $xx = Carbon::createFromDate($yeard,1,1);
-        print_r($xx);print_r('<br>');
-        $x1 = $today->subDays($weekd);
-        print_r($x1);print_r('<br>');
-        print_r($xx->dayOfYear+1);print_r('<br>');
-        $x2 = $today->subDays($xx->dayOfYear+1);
-        print_r($x2);print_r('<br>');
-        $yy = $today->subDays($weekd)->subDays($xx->dayOfYear+1);
-        $vv = $yy->dayOfYear+1;
-        dd((INT)($vv/7));
-        $fullStart = Carbon::today()->startOfYear()->isSaturday();
-        if ($fullStart)
-            $weekNo = $today->weekOfYear;
-        else
-            $weekNo = $today->dayOfYear+1;
+        $f1 = today()->firstOfYear();
 
+        $diffDays = 7 - ($f1->dayOfWeek+1);
 
-//        echo $today->formatLocalized('%w');echo '<br>';
+        $numDays = ($today->dayOfYear+1) - $diffDays;
 
-        print_r($today);print_r('<br>');
-        print_r($today->isSaturday());print_r('<br>');
-        print_r($today->toDayDateTimeString());print_r('<br>');
-        print_r((($weekNo/7)%4+1));print_r('<br>');
-        print_r('Salesbuzz Week '.(($weekNo/7)%4+1));print_r('<br>');
+        $numWeeks = ceil($numDays/7+1);
 
-        dd($weekNo);
-        return $today;
+        $weekNum = $numWeeks % 4 ;
+
+        return $weekNum==0 ? 4 : $weekNum;
     }
 
-
-    function getDayOfWeek(\DateTimeImmutable $date)
-    {
-        return ($date->format('N') + 2) % 7;
+    public function get_today_name(){
+        return $today = date('D');
     }
-
-    function getWeekNumber(\DatetimeImmutable $date)
-    {
-        // Recursive function that loops through every day until it gets the start of a week
-        $startOfWeek = function (\DateTimeImmutable $date) use (&$startOfWeek) {
-            return ($this->getDayOfWeek($date) === 1)
-                ? $date : $startOfWeek($date->modify('+1 day'));
-        };
-
-        // The z option tells us what day of the year this is,
-        // not a 100% sure this step is necessary
-        if ($this->getDayOfWeek($date === 1)) {
-            $nbDays = $date->format('z');
-        } else {
-            $nbDays = $startOfWeek($date->modify('-7 days'))->format('z');
-        }
-        // Divides by the number of days in a week to get the number of weeks
-        return ceil($nbDays / 7);
-    }
-
+    ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
 
 }
