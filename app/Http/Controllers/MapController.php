@@ -43,7 +43,10 @@ class MapController extends Controller
             $res[] = $customer;
         }
 
-        return $res;
+        $res = collect($res);
+        $res = $res->sortBy('visit_info.visit_time');
+        return $res->values()->all();
+//        return $res;
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
     }
 
