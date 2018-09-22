@@ -42,7 +42,7 @@ class MapController extends Controller
             $res[] = $customer;
         }
 
-        return $res;
+        return response()->json($res , 200);
     }
 
     public function get_no_loc(Request $request){
