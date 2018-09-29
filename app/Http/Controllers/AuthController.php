@@ -57,7 +57,10 @@ class AuthController extends Controller
 
     private function get_all_supervisor_salesman($supervisor)
     {
-        return MapUser::where('buid',$supervisor->buid)->where('code','!=',$supervisor->code)->get();
+        return MapUser::where('buid',$supervisor->buid)
+            ->where('code','!=',$supervisor->code)
+            ->where('supervisor','!=',1)
+            ->get();
     }
 
 }
