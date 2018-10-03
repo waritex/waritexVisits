@@ -64,7 +64,6 @@ class MapController extends Controller
         $today = now()->toDateString();
         $weekNumber = $this->get_salesbuzz_week_number();
         $dayString = $this->get_today_name();
-        return $this->get_no_location_customers_salesbuzz($salesman,$weekNumber,$dayString);
         if (!$todayCustomers = $this->get_no_location_customers_salesbuzz($salesman,$weekNumber,$dayString))
             return response()->json('No Customers With No Location Data In Today\'s Route',500);
         $date_range = now()->addDays(-6)->toDateString();
