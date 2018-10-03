@@ -89,6 +89,20 @@ class MapController extends Controller
         return $res->values()->all();
     }
 
+    public function get_schedule(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Retry Or Select Salesman',500);
+        $today = now()->toDateString();
+        $weekNumber = $this->get_salesbuzz_week_number();
+        $dayString = $this->get_today_name();
+        if (!$schedule = $this->get_route_schedule($salesman))
+            return response()->json('Error In User Please Retry',500);
+        $res = collect($schedule);
+        return $res;
+    }
+
 
     // Not Used Yet........................................
     public function get_custoemrs_supervisor(Request $request)
@@ -226,6 +240,109 @@ class MapController extends Controller
       AND (HH_Customer.[Latitude] = 0 OR HH_Customer.[Latitude] IS NULL)
         " , [$salesman , $weekNum]);
         return empty($customers)? false : $customers;
+    }
+
+    private function get_route_schedule($salesman)
+    {
+        $SQL = "
+        SELECT 
+       distinct (AreaNameA) as Area
+	   , CityNameA as City
+	   , DistrictNameA as District
+	   , RegionNameA as Region
+      ,V_JPlans.[StartWeek] as Week  
+      ,'SAT' as Day
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.sat  = 1
+	  union 
+	  (SELECT 
+       distinct (AreaNameA)
+	   , CityNameA
+	   , DistrictNameA
+	   , RegionNameA
+      ,V_JPlans.[StartWeek]
+      ,'SUN'
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.sun  = 1
+	  )
+	  union 
+	  (SELECT 
+       distinct (AreaNameA)
+	   , CityNameA
+	   , DistrictNameA
+	   , RegionNameA
+      ,V_JPlans.[StartWeek]
+      ,'MON'
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.mon  = 1
+	  )
+	  union 
+	  (SELECT 
+       distinct (AreaNameA)
+	   , CityNameA
+	   , DistrictNameA
+	   , RegionNameA
+      ,V_JPlans.[StartWeek]
+      ,'TUE'
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.tue  = 1
+	  )
+	  union 
+	  (SELECT 
+       distinct (AreaNameA)
+	   , CityNameA
+	   , DistrictNameA
+	   , RegionNameA
+      ,V_JPlans.[StartWeek]
+      ,'WED'
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.wed  = 1
+	  )
+	  union 
+	  (SELECT 
+       distinct (AreaNameA)
+	   , CityNameA
+	   , DistrictNameA
+	   , RegionNameA
+      ,V_JPlans.[StartWeek]
+      ,'THU'
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
+	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
+	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
+	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
+      WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.thu  = 1
+	  )
+	  ORDER BY StartWeek
+        ";
+        $schedule = DB::connection('wri')->select($SQL , [$salesman , $salesman , $salesman , $salesman , $salesman , $salesman]);
+        return empty($schedule) ? false  : $schedule;
     }
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
