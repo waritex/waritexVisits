@@ -11,7 +11,13 @@ use DB;
 
 class MapController extends Controller
 {
+    // Show Web edition
+    public function showWeb()
+    {
+        return view('map');
+    }
 
+    // Get today's Customers in Route
     public function get_customers(Request $request)
     {
         $salesman = $request->post('salesman',false);
@@ -50,15 +56,19 @@ class MapController extends Controller
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
     }
 
+    // Get Customers without location data
     public function get_no_loc(Request $request){
         $salesman = $request->post('salesman',false);
         if (!$salesman)
             return response()->json('Error In User Please Retry Or Select Salesman',500);
         $today = now()->toDateString();
-        if (!$todayCustomers = $this->get_no_location_customers($salesman,$today))
-            return response()->json('No Customers In Today\'s Route',500);
+        $weekNumber = $this->get_salesbuzz_week_number();
+        $dayString = $this->get_today_name();
+        return $this->get_no_location_customers_salesbuzz($salesman,$weekNumber,$dayString);
+        if (!$todayCustomers = $this->get_no_location_customers_salesbuzz($salesman,$weekNumber,$dayString))
+            return response()->json('No Customers With No Location Data In Today\'s Route',500);
         $date_range = now()->addDays(-6)->toDateString();
-        if (! $visits = $this->get_today_visits($salesman,$today,$date_range)){
+        if (! $visits = $this->get_today_visits_ordered($salesman,$today,$date_range)){
             return $todayCustomers;
         }
         $res = [];
@@ -75,87 +85,11 @@ class MapController extends Controller
             $res[] = $customer;
         }
 
-        return $res;
+        $res = collect($res);
+        $res = $res->sortBy('visit_info.visit_time');
+        return $res->values()->all();
     }
 
-
-    private function get_today_routes($salesman , $date){
-        $routes = Route::where('Date',$date)
-            ->where('SalesmanCode',$salesman)
-            ->get();
-        if ($routes->isEmpty())
-            return false;
-        return $routes;
-    }
-
-    private function get_today_routes_from_salesbuzz($salesman , $weekNum , $day){
-        $routes = DB::connection('wri')->select("
-      SELECT 
-       V_JPlans.[AssignedTO]			as SalesmanCode
-      ,V_JPlans.[CustomerID]			as CustomerID
-	  ,HH_Customer.[CustomerNameA]		as CustomerName
-	  ,HH_Customer.[Latitude]			as Lat
-      ,HH_Customer.[Longitude]			as Lng
-      --,V_JPlans.[StartWeek]
-      --,V_JPlans.[sat]
-      --,V_JPlans.[sun]
-      --,V_JPlans.[mon]
-      --,V_JPlans.[tue]
-      --,V_JPlans.[wed]
-      --,V_JPlans.[thu]
-      --,V_JPlans.[fri]
-      FROM [WaritexLive].[dbo].[V_JPlans]
-      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-      WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
-      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
-        " , [$salesman , $weekNum]);
-
-        return empty($routes)? false : $routes;
-    }
-
-    private function get_today_visits($salesman , $date , $dateRange){
-        $visits = DB::connection('wri')->select("
-        SELECT 
-        dbo.V_HH_VisitDuration.ID               AS visit_id
-        ,dbo.V_HH_VisitDuration.CUstomerNo       AS customer_id
-        ,CAST( dbo.V_HH_VisitDuration.starttime as Date ) AS visit_date
-         
-        FROM dbo.V_HH_VisitDuration
-        
-        WHERE        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? )
-			  AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
-        " , [$dateRange , $date , $salesman]);
-
-        return empty($visits)? false : $visits;
-    }
-
-    private function get_today_visits_ordered($salesman , $date , $dateRange){
-        $visits = DB::connection('wri')->select("
-        SELECT 
-          dbo.V_HH_VisitDuration.ID					        AS visit_id
-        , dbo.V_HH_VisitDuration.CUstomerNo			        AS customer_id
-        , CAST( dbo.V_HH_VisitDuration.starttime AS Date )  AS visit_date
-		, CAST( dbo.V_HH_VisitDuration.starttime AS Time )  AS visit_time
-        , row_number() OVER (ORDER BY starttime asc)        AS 'order'			 
-        FROM dbo.V_HH_VisitDuration
-        
-        WHERE 
-        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? ) AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
-		ORDER BY visit_time ASC	  
-        " , [$dateRange , $date , $salesman]);
-
-        return empty($visits)? false : $visits;
-    }
-
-    private function get_no_location_customers($salesman , $date)
-    {
-        $customers = Nolocation::where('Date',$date)
-            ->where('SalesmanCode',$salesman)
-            ->get();
-        if ($customers->isEmpty())
-            return false;
-        return $customers;
-    }
 
     // Not Used Yet........................................
     public function get_custoemrs_supervisor(Request $request)
@@ -209,6 +143,10 @@ class MapController extends Controller
         return $weekNum==0 ? 4 : $weekNum;
     }
 
+    /**
+     * Get Today's Name as String (Sat,Sun,Mon,...etc)
+     * @return false|string
+     */
     public function get_today_name(){
         return $today = date('D');
     }
@@ -216,9 +154,81 @@ class MapController extends Controller
     ///////////////////////////////////////////////
 
 
-    public function showWeb()
-    {
-        return view('map');
+    ///////////////////////////////////////////////
+    // DataBase Functions
+    ///////////////////////////////////////////////
+    private function get_today_routes_from_salesbuzz($salesman , $weekNum , $day){
+        $routes = DB::connection('wri')->select("
+      SELECT 
+       V_JPlans.[AssignedTO]			as SalesmanCode
+      ,V_JPlans.[CustomerID]			as CustomerID
+	  ,HH_Customer.[CustomerNameA]		as CustomerName
+	  ,HH_Customer.[Latitude]			as Lat
+      ,HH_Customer.[Longitude]			as Lng
+      ,ROUND(Balance , 0)               as Balance
+      --,V_JPlans.[StartWeek]
+      --,V_JPlans.[sat]
+      --,V_JPlans.[sun]
+      --,V_JPlans.[mon]
+      --,V_JPlans.[tue]
+      --,V_JPlans.[wed]
+      --,V_JPlans.[thu]
+      --,V_JPlans.[fri]
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+      WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
+      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
+        " , [$salesman , $weekNum]);
+
+        return empty($routes)? false : $routes;
     }
+
+    private function get_today_visits_ordered($salesman , $date , $dateRange){
+        $visits = DB::connection('wri')->select("
+        SELECT 
+          dbo.V_HH_VisitDuration.ID					        AS visit_id
+        , dbo.V_HH_VisitDuration.CUstomerNo			        AS customer_id
+        , CAST( dbo.V_HH_VisitDuration.starttime AS Date )  AS visit_date
+		, CAST( dbo.V_HH_VisitDuration.starttime AS Time )  AS visit_time
+        , row_number() OVER (ORDER BY starttime asc)        AS 'order'			 
+        FROM dbo.V_HH_VisitDuration
+        
+        WHERE 
+        ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? ) AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
+		ORDER BY visit_time ASC	  
+        " , [$dateRange , $date , $salesman]);
+
+        return empty($visits)? false : $visits;
+    }
+
+    private function get_no_location_customers_salesbuzz($salesman , $weekNum , $day){
+        $customers = DB::connection('wri')->select("
+        SELECT 
+       V_JPlans.[AssignedTO]			as SalesmanCode
+      ,V_JPlans.[CustomerID]			as CustomerID
+	  ,HH_Customer.[CustomerNameA]		as CustomerName
+      ,ROUND(Balance , 0)               as Balance
+	  ,HH_Area.areanamea				as Area
+	  ,HH_City.citynamea				as City
+	  ,HH_District.districtnamea		as District
+	  ,HH_Region.regionnamea			as Region
+	  ,HH_Customer.address				as Address
+	  ,HH_Customer.tel					as Tel
+	  ,HH_Customer.mobile				as Mobile
+
+      FROM [WaritexLive].[dbo].[V_JPlans]
+      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+	  LEFT JOIN HH_Area ON HH_Customer.areano = HH_Area.areano
+	  LEFT JOIN HH_City ON HH_Customer.cityno = HH_City.cityno
+	  LEFT JOIN HH_District ON HH_Customer.districtno = HH_District.districtno
+	  LEFT JOIN HH_Region ON HH_Customer.regionno = HH_Region.regionno
+	  WHERE 
+	  V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
+      AND (HH_Customer.[Latitude] = 0 OR HH_Customer.[Latitude] IS NULL)
+        " , [$salesman , $weekNum]);
+        return empty($customers)? false : $customers;
+    }
+    ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
 
 }
