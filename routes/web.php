@@ -41,6 +41,7 @@ Route::post('/login', 'AuthController@auth');
 Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
 Route::post('/get_customers','MapController@get_customers');
 Route::post('/get_noloc','MapController@get_no_loc');
+Route::post('/get_schedule','MapController@get_schedule');
 //Test Routes:
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +53,7 @@ Route::post('/get_noloc','MapController@get_no_loc');
 Route::get('/test' , 'VisitController@test_task');
 
 Route::get('/date' , 'MapController@get_today_name');
+Route::get('/schedule' , 'MapController@get_schedule');
 Route::get('/infoo' , function () {
 echo phpinfo();
 });

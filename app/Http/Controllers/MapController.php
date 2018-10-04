@@ -100,7 +100,12 @@ class MapController extends Controller
         if (!$schedule = $this->get_route_schedule($salesman))
             return response()->json('Error In User Please Retry',500);
         $res = collect($schedule);
-        return $res;
+        $weeks =  $res->groupBy('Week');
+        $s = [];
+        foreach ($weeks as $w => $week){
+            $s[$w] = $week->groupBy('OrDay');
+        }
+        return ['route'=>$s , 'week'=>$weekNumber , 'day'=>strtoupper($dayString)];
     }
 
 
@@ -251,7 +256,7 @@ class MapController extends Controller
 	   , DistrictNameA as District
 	   , RegionNameA as Region
       ,V_JPlans.[StartWeek] as Week  
-      ,'SAT' as Day
+      ,'SAT' as Day , 'السبت' as ArDay , 1 as OrDay
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
@@ -266,7 +271,7 @@ class MapController extends Controller
 	   , DistrictNameA
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
-      ,'SUN'
+      ,'SUN' , 'الأحد'  , 2
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
@@ -282,7 +287,7 @@ class MapController extends Controller
 	   , DistrictNameA
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
-      ,'MON'
+      ,'MON', 'الأثنين' , 3
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
@@ -298,7 +303,7 @@ class MapController extends Controller
 	   , DistrictNameA
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
-      ,'TUE'
+      ,'TUE', 'الثلاثاء' , 4
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
@@ -314,7 +319,7 @@ class MapController extends Controller
 	   , DistrictNameA
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
-      ,'WED'
+      ,'WED', 'الأربعاء' , 5
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
@@ -330,7 +335,7 @@ class MapController extends Controller
 	   , DistrictNameA
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
-      ,'THU'
+      ,'THU', 'الخميس' , 6
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
