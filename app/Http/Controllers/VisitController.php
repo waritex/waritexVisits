@@ -851,12 +851,14 @@ class VisitController extends Controller
     {
         // $last_visit_time = DB::select('SELECT concat( MAX(visit_start) ) as last_visit FROM visits');
         // fix bug getting time for only one salesman
-        $last_visit_times = DB::select('SELECT 
-concat( MAX(visit_start) )   as last_visit 
-, SUBSTRING_INDEX(visit_id, "-", 1) as salesman 
-FROM visits
-GROUP BY salesman
-HAVING salesman LIKE "IRQ%"');
+        $last_visit_times = DB::select("
+        SELECT 
+        MAX(visit_start)   as last_visit ,
+        SUBSTRING(visit_id, 1, 6) as salesman 
+        FROM [GoogleVisits]
+        GROUP BY  SUBSTRING(visit_id, 1, 6)
+        --HAVING  SUBSTRING(visit_id, 1, 6) LIKE 'IRQ%'
+        ");
         $res = [];
         foreach ($last_visit_times as $last_visit_time){
             if (empty($last_visit_time)){
