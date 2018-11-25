@@ -875,7 +875,7 @@ class VisitController extends Controller
      * @return bool
      */
     private function check_duplicate($visit_id){
-        $exist = DB::select('SELECT visit_id FROM visits WHERE visit_id = ? ',[$visit_id]);
+        $exist = DB::select('SELECT visit_id FROM GoogleVisits WHERE visit_id = ? ',[$visit_id]);
         return empty($exist)? false : true;
     }
 
