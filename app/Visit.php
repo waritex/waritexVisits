@@ -8,7 +8,7 @@ class Visit extends Model
 {
     protected $guarded = [];
 
-    protected $table = 'visits';
+    protected $table = 'GoogleVisits';
 
 
 }
