@@ -15,7 +15,7 @@ class GPSReadsController extends Controller
         $satellite = $request->get('satellite',false);
         $accuracy = $request->get('accuracy',false);
         $provider = $request->get('provider',false);
-        $time = Carbon::createFromTimeString($request->get('time',false));
+        $time = Carbon::createFromTimeString($request->get('time',false))->addHours(3);
 
         $data = [
             'lat'               => $lat,
