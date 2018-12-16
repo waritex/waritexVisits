@@ -17,6 +17,34 @@ class MapController extends Controller
         return view('map');
     }
 
+    public function showKSAWeb()
+    {
+        $ksaData = DB::connection('wri')->select("
+SELECT
+cus.CustomerNo
+, cus.CustomerNameA
+, cus.SalesmanNo
+, cus.Balance
+, cus.Latitude  , cus.Longitude
+, ord.total
+, ord.numbero
+, reg.RegionNameA , dis.DistrictNameA , city.CityNameA , area.AreaNameA
+FROM HH_Customer as cus
+left join HH_Region reg on cus.RegionNo = reg.RegionNo and reg.buid = cus.BUID
+left join HH_District dis on cus.DistrictNo = dis.DistrictNo and dis.buid = cus.BUID
+left join HH_City city on cus.CityNo = city.CityNo and city.buid = cus.BUID and city.CityNameA!='ملغي'
+left join HH_Area area on cus.AreaNo = area.AreaNo and area.buid = cus.BUID
+left join (
+SELECT SUM(NetTotal)as total , count(OrderID)as numbero , CustomerNo from AR_Order where buid = 103 group by CustomerNo
+)
+as ord on cus.CustomerNo = ord.CustomerNo
+WHERE cus.BUID = 103
+order by Balance desc
+        " );
+        $ksaData =  json_encode($ksaData);
+        return view('KSA' , compact('ksaData'));
+    }
+
     // Get today's Customers in Route
     public function get_customers(Request $request)
     {

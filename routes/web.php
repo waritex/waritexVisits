@@ -37,6 +37,7 @@ Route::get('/readgps' , 'GPSReadsController@store');
 ///////////////////////////////////////////////////////////////////
 // Web App
 Route::get('/map','MapController@showWeb');
+Route::get('/ksamap','MapController@showKSAWeb');
 // API
 Route::post('/login', 'AuthController@auth');
 Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
