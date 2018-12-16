@@ -110,7 +110,7 @@ class MapController extends Controller
     }
 
     public function get_car_location(Request $request){
-        $salesman = $request->post('carcode',false);
+        $salesman = $request->post('salesman',false);
         if (!$salesman)
             return response()->json('Error In User Please Retry Or Select Salesman',500);
         // get car code
