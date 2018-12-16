@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\MapUser;
-use App\Nolocation;
+use GuzzleHttp\Client;
 use App\Route;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -89,6 +89,7 @@ class MapController extends Controller
         return $res->values()->all();
     }
 
+    // get Schedule routes
     public function get_schedule(Request $request)
     {
         $salesman = $request->post('salesman',false);
@@ -108,6 +109,28 @@ class MapController extends Controller
         return ['route'=>$s , 'week'=>$weekNumber , 'day'=>strtoupper($dayString)];
     }
 
+    public function get_car_location(Request $request){
+        $salesman = $request->post('carcode',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Retry Or Select Salesman',500);
+        // get car code
+        $user = MapUser::where('code',$salesman)->first();
+        $carcode = $user->carcode;
+        // get from gettyTrack API
+        $postionData = $this->get_car_postion($carcode);
+        if ($postionData === false){
+            return response()->json('No Car Data From GettyTrack' , 500);
+        }
+        else{
+            try{
+                $data['lat'] = $postionData['vehicle'][0]['latitude'];
+                $data['lng'] = $postionData['vehicle'][0]['longitude'];
+                $data['time'] = Carbon::createFromTimestamp($postionData['vehicle'][0]['unix_ts']);
+            }
+            catch (\Exception $e){}
+            return response()->json($data , 200);
+        }
+    }
 
     // Not Used Yet........................................
     public function get_custoemrs_supervisor(Request $request)
@@ -351,5 +374,27 @@ class MapController extends Controller
     }
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
+
+    // Car functions
+    private function get_car_postion($carcode){
+        $http = new Client;
+        // Parameters:
+        /////////////////////////////////////
+        $url = env('GPS_URL',false);
+        $username = env('GPS_USER',false);
+        $password = env('GPS_PASS',false);
+        $car = $carcode;
+        if ( !($username && $password && $car) )
+            return false;
+        /////////////////////////////////////
+        try{
+            $response = $http->get("$url?u=$username&p=$password&v=$car");
+        }
+        catch (\Exception $exception){
+            return false;
+        }
+
+        return json_decode((string) $response->getBody(), true);
+    }
 
 }

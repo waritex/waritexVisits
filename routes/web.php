@@ -43,6 +43,7 @@ Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
 Route::post('/get_customers','MapController@get_customers');
 Route::post('/get_noloc','MapController@get_no_loc');
 Route::post('/get_schedule','MapController@get_schedule');
+Route::post('/get_car_location','MapController@get_car_location');
 //Test Routes:
 
 ////////////////////////////////////////////////////////////////////

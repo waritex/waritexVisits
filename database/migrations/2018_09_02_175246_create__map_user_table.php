@@ -24,6 +24,8 @@ class CreateMapUserTable extends Migration
                 ->unique();
             $table->boolean('supervisor')->default(false);
             $table->integer('buid');
+            $table->string('carcode')
+                ->nullable();
             $table->timestamps();
         });
     }
