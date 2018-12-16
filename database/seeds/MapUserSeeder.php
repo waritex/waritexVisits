@@ -13,7 +13,7 @@ class MapUserSeeder extends Seeder
      */
     public function run()
     {
-        $file = public_path('excel\MapUsers.xlsx');
+        $file = public_path('excel/MapUsers.xlsx');
         $reader = Excel::selectSheetsByIndex(0)->load($file);
         foreach ($reader->get() as $user){
             MapUser::updateOrCreate($user->toArray() , ['code'=>$user->code]);
