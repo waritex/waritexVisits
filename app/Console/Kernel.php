@@ -3,6 +3,8 @@
 namespace App\Console;
 
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\VisitSYRController;
+use App\Http\Controllers\VisitJORController;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -29,14 +31,41 @@ class Kernel extends ConsoleKernel
         //          ->hourly();
         //
         //schedule->call('App\Http\Controllers\VisitController@task')->everyMinute();
-        $schedule->call(function (){
-            $controller = new VisitController();
-            $controller->task();
-        })
-            ->name('google')
-            ->everyMinute()
-            ->appendOutputTo(storage_path('app/aassdd.log'))
-            ->withoutOverlapping();
+        $irq = new VisitController();
+        $jor = new VisitJORController();
+        $syr = new VisitSYRController();
+        try{
+            $schedule->call(function () use($irq){
+                $irq->task();
+            })
+                ->name('google')
+                ->everyMinute()
+                ->appendOutputTo(storage_path('app/aassdd.log'))
+                ->withoutOverlapping();
+        }
+        catch (\Exception $e){echo "error in Iraq";}
+
+        try{
+            $schedule->call(function () use($jor){
+                $jor->task();
+            })
+                ->name('googleJOR')
+                ->everyMinute()
+                ->appendOutputTo(storage_path('app/aassdd.log'))
+                ->withoutOverlapping();
+        }
+        catch (\Exception $e){echo "error in Iraq";}
+
+        try{
+            $schedule->call(function () use($syr){
+                $syr->task();
+            })
+                ->name('googleSYR')
+                ->everyMinute()
+                ->appendOutputTo(storage_path('app/aassdd.log'))
+                ->withoutOverlapping();
+        }
+        catch (\Exception $e){echo "error in Iraq";}
     }
 
     /**
