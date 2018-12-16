@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
   <script data-ionic="inject">
-    (function(w){var i=w.Ionic=w.Ionic||{};i.version='3.9.2';i.angular='5.2.11';i.staticDir='build/';})(window);
+      (function(w){var i=w.Ionic=w.Ionic||{};i.version='3.9.2';i.angular='5.2.11';i.staticDir='build/';})(window);
   </script>
   <meta charset="UTF-8">
   <title>Waritex</title>
@@ -35,20 +35,20 @@
 </head>
 <body>
 
-  <!-- Ionic's root component and where the app will load -->
-  <ion-app></ion-app>
+<!-- Ionic's root component and where the app will load -->
+<ion-app></ion-app>
 
-  <!-- The polyfills js is generated during the build process -->
-  <script src="build/polyfills.js"></script>
+<!-- The polyfills js is generated during the build process -->
+<script src="build/polyfills.js"></script>
 
-  <!-- The vendor js is generated during the build process
-       It contains all of the dependencies in node_modules -->
-  <script src="build/vendor.js"></script>
+<!-- The vendor js is generated during the build process
+     It contains all of the dependencies in node_modules -->
+<script src="build/vendor.js"></script>
 
-  <!-- The main bundle js is generated during the build process -->
-  <script src="build/main.js"></script>
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCsY5zoDVH3drpV_vvJnD2y-ZiWQbXlNxw&libraries=geometry"
-    async defer></script>
+<!-- The main bundle js is generated during the build process -->
+<script src="build/main.js"></script>
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCsY5zoDVH3drpV_vvJnD2y-ZiWQbXlNxw&libraries=geometry"
+        async defer></script>
 </body>
 </html>
