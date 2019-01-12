@@ -235,16 +235,10 @@ order by Balance desc
 	  ,HH_Customer.[Latitude]			as Lat
       ,HH_Customer.[Longitude]			as Lng
       ,ROUND(Balance , 0)               as Balance
-      --,V_JPlans.[StartWeek]
-      --,V_JPlans.[sat]
-      --,V_JPlans.[sun]
-      --,V_JPlans.[mon]
-      --,V_JPlans.[tue]
-      --,V_JPlans.[wed]
-      --,V_JPlans.[thu]
-      --,V_JPlans.[fri]
+      ,CASE WHEN hh_CustomerAttr.AttrID = 'مقطوع جلي' OR hh_CustomerAttr.AttrID = 'غير متعامل جلي' THEN 1 ELSE 0 END as Deal
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+      LEFT JOIN hh_CustomerAttr on hh_CustomerAttr.CustomerNo = V_JPlans.CustomerID and hh_CustomerAttr.AttrID in ('مقطوع جلي','متعامل جلي','غير متعامل جلي')
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
       AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
         " , [$salesman , $weekNum]);
