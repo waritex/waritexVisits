@@ -234,7 +234,7 @@ order by Balance desc
 	  ,HH_Customer.[CustomerNameA]		as CustomerName
 	  ,HH_Customer.[Latitude]			as Lat
       ,HH_Customer.[Longitude]			as Lng
-      ,ROUND(Balance , 0)               as Balance
+      ,case  when ROUND(Balance , 0) =0 then null else    ROUND(Balance , 0)  end          as Balance
       ,CASE WHEN hh_CustomerAttr.AttrID = 'مقطوع جلي' OR hh_CustomerAttr.AttrID = 'غير متعامل جلي' THEN 1 ELSE 0 END as Deal
       FROM [WaritexLive].[dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
