@@ -37,10 +37,12 @@ Route::get('/readgps' , 'GPSReadsController@store');
 ///////////////////////////////////////////////////////////////////
 // Web App
 Route::get('/map','MapController@showWeb');
+Route::get('/Adminmap',function(){return view('AdminMap');});
 Route::get('/ksamap','MapController@showKSAWeb');
 // API
 Route::post('/login', 'AuthController@auth');
 Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
+Route::post('/get_all_customers','MapController@get_all_customers')->name('get_all_customers');
 Route::post('/get_customers','MapController@get_customers');
 Route::post('/get_noloc','MapController@get_no_loc');
 Route::post('/get_schedule','MapController@get_schedule');

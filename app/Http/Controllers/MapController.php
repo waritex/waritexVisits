@@ -45,7 +45,7 @@ order by Balance desc
         return view('KSA' , compact('ksaData'));
     }
 
-    // Get today's Customers in Route
+    // Get today's Customers in Route for a Salesman
     public function get_customers(Request $request)
     {
         $salesman = $request->post('salesman',false);
@@ -82,6 +82,69 @@ order by Balance desc
         return $res->values()->all();
 //        return $res;
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
+    }
+
+    // Get today's Customers in Route for all Salesmans
+    public function get_all_customers(Request $request)
+    {
+        $salesmans = ['IRQ004','IRQ006','IRQ007','IRQ008','IRQ011'];
+        $today = now()->toDateString();
+        $weekNumber = $this->get_salesbuzz_week_number();
+        $dayString = $this->get_today_name();
+        $date_range = now()->addDays(-6)->toDateString();
+        $result = [];
+        foreach ($salesmans as $salesman){
+            try{
+                // get car code
+                $user = MapUser::where('code',$salesman)->first();
+                $name = $user->name;
+                $result[$salesman]['name'] = $name;
+                $carcode = $user->carcode;
+                // get from gettyTrack API
+                $postionData = $this->get_car_postion($carcode);
+                if ($postionData === false){
+                    $result[$salesman]['car'] = 'no car data';
+                }
+                else{
+                    try{
+                        $data['lat'] = $postionData['vehicle'][0]['latitude'];
+                        $data['lng'] = $postionData['vehicle'][0]['longitude'];
+                        $data['time'] = Carbon::createFromTimestamp($postionData['vehicle'][0]['unix_ts']);
+                    }
+                    catch (\Exception $e){}
+                    $result[$salesman]['car'] = $data;
+                }
+                $todayCustomers = $this->get_today_routes_from_salesbuzz($salesman , $weekNumber , $dayString);
+                if (! $visits = $this->get_today_visits_ordered($salesman,$today,$date_range)){
+                    $result[$salesman]['customers'] = $todayCustomers;
+                }
+                else{
+                    $res = [];
+                    foreach ($todayCustomers as $customer){
+                        foreach ($visits as $visit){
+                            if ( trim($visit->customer_id) === trim($customer->CustomerID) ){
+                                $customer->visited = 1;
+                                $customer->visit_info = $visit;
+                                if ( trim($visit->visit_date) !== $today){
+                                    continue 2;
+                                }
+                                break;
+                            }
+                        }
+                        $res[] = $customer;
+                    }
+
+                    $res = collect($res);
+                    $res = $res->sortBy('visit_info.visit_time');
+                    $result[$salesman]['customers'] = $res->values()->all();
+                }
+            }
+            catch (\Exception $exception){
+                $result[$salesman]['customers'] = $exception;
+                continue;
+            }
+        }
+        return $result;
     }
 
     // Get Customers without location data
