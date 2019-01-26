@@ -299,7 +299,7 @@ order by Balance desc
       ,HH_Customer.[Longitude]			as Lng
       ,case  when ROUND(Balance , 0) =0 then null else    ROUND(Balance , 0)  end          as Balance 
       ,CASE WHEN hh_CustomerAttr.AttrID = 'مقطوع جلي' OR hh_CustomerAttr.AttrID = 'غير متعامل جلي' THEN 1 ELSE 0 END as Deal
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
       LEFT JOIN hh_CustomerAttr on hh_CustomerAttr.CustomerNo = V_JPlans.CustomerID and hh_CustomerAttr.AttrID in ('مقطوع جلي','متعامل جلي','غير متعامل جلي')
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
@@ -342,7 +342,7 @@ order by Balance desc
 	  ,HH_Customer.tel					as Tel
 	  ,HH_Customer.mobile				as Mobile
 
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  LEFT JOIN HH_Area ON HH_Customer.areano = HH_Area.areano
 	  LEFT JOIN HH_City ON HH_Customer.cityno = HH_City.cityno
@@ -365,7 +365,7 @@ order by Balance desc
 	   , RegionNameA as Region
       ,V_JPlans.[StartWeek] as Week  
       ,'SAT' as Day , 'السبت' as ArDay , 1 as OrDay
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
@@ -380,7 +380,7 @@ order by Balance desc
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
       ,'SUN' , 'الأحد'  , 2
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
@@ -396,7 +396,7 @@ order by Balance desc
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
       ,'MON', 'الأثنين' , 3
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
@@ -412,7 +412,7 @@ order by Balance desc
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
       ,'TUE', 'الثلاثاء' , 4
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
@@ -428,7 +428,7 @@ order by Balance desc
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
       ,'WED', 'الأربعاء' , 5
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
@@ -444,7 +444,7 @@ order by Balance desc
 	   , RegionNameA
       ,V_JPlans.[StartWeek]
       ,'THU', 'الخميس' , 6
-      FROM [WaritexLive].[dbo].[V_JPlans]
+      FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 	  INNER JOIN HH_Region ON HH_Customer.RegionNo = HH_Region.RegionNo
 	  INNER JOIN HH_District ON HH_Customer.DistrictNo = HH_District.DistrictNo
