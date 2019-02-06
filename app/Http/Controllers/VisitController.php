@@ -298,7 +298,7 @@ class VisitController extends Controller
         if (!$visit_times) return NULL;
         // try get new visits
         foreach ($visit_times as $visit_time){
-            $visit_time = Carbon::parse($start_date);
+            $visit_time->last_visit = Carbon::parse($start_date);
             $new_visits = $this->get_new_visits($visit_time);
             if (!$new_visits) continue;
 
