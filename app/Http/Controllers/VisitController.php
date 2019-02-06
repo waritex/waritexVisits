@@ -290,96 +290,107 @@ class VisitController extends Controller
 
     }
 
-    public function fixTaskManually($startDate , $endDate)
+    public function fixTaskManually($start_date , $end_date)
     {
+        // get last visits in our DB for each salesman
+        $visit_times = $this->get_last_visit();
+        // if error
+        if (!$visit_times) return NULL;
         // try get new visits
-        $new_visits = $this->get_visits_bet_dates($startDate , $endDate);
-        foreach ($new_visits as $k => $visit){
-            print_r('visit: '.$k);
-            echo "\n";
-            // check if there's a duplicate
-            if ($this->check_duplicate($visit->visit_id))
-                continue;
+        foreach ($visit_times as $visit_time){
+            $visit_time = Carbon::parse($start_date);
+            $new_visits = $this->get_new_visits($visit_time);
+            if (!$new_visits) continue;
 
-            $data = [
-                'visit_id'                      =>  $visit->visit_id,
-                'visit_start'                   =>  $visit->visit_start,
-                'visit_finish'                  =>  $visit->visit_finish,
-                'current_customer_lng'          =>  $visit->Longitude,
-                'current_customer_lat'          =>  $visit->Latitude,
-                'last_visit_id'                 =>  $visit->last_id,
-                'last_customer_lng'             =>  $visit->last_lng,
-                'last_customer_lat'             =>  $visit->last_lat,
-                'first_gps_lat'                 =>  $visit->first_gps_lat,
-                'first_gps_lng'                 =>  $visit->first_gps_lng,
-                'second_gps_lat'                =>  $visit->second_gps_lat,
-                'second_gps_lng'                =>  $visit->second_gps_lng,
-            ];
+            // for each new visit ask google
+            foreach ($new_visits as $visit){
+                if (Carbon::parse($end_date)->toDateString() === Carbon::parse($visit->visit_start)->toDateString()){
+                    continue;
+                }
+                // check if there's a duplicate
+                if ($this->check_duplicate($visit->visit_id))
+                    continue;
 
-            // check if first visit in day
-            if ($this->check_first_visit_inDay($data)===true){
-                $data['google_time_pessimistic'] = 0;
-                $data['google_distance'] = 0;
-                $data['last_read_distance'] = 0;
-            }
+                $data = [
+                    'visit_id'                      =>  $visit->visit_id,
+                    'visit_start'                   =>  $visit->visit_start,
+                    'visit_finish'                  =>  $visit->visit_finish,
+                    'current_customer_lng'          =>  $visit->Longitude,
+                    'current_customer_lat'          =>  $visit->Latitude,
+                    'last_visit_id'                 =>  $visit->last_id,
+                    'last_customer_lng'             =>  $visit->last_lng,
+                    'last_customer_lat'             =>  $visit->last_lat,
+                    'first_gps_lat'                 =>  $visit->first_gps_lat,
+                    'first_gps_lng'                 =>  $visit->first_gps_lng,
+                    'second_gps_lat'                =>  $visit->second_gps_lat,
+                    'second_gps_lng'                =>  $visit->second_gps_lng,
+                ];
 
-            else{
-                // debug data
-                /*
-                echo "\n";
-                print_r($data);
-                echo "\n";
-                */
-                // check if error on lat || lng
-                if ($this->check_error_visit_latlng($data)===true){
+                // check if first visit in day
+                if ($this->check_first_visit_inDay($data)===true){
                     $data['google_time_pessimistic'] = 0;
                     $data['google_distance'] = 0;
+                    $data['last_read_distance'] = 0;
                 }
 
                 else{
-                    // then ask google
-                    // ask google
-                    $res_google = $this->ask_google($data);
-                    if ($res_google===false) {
+                    // debug data
+                    /*
+                    echo "\n";
+                    print_r($data);
+                    echo "\n";
+                    */
+                    // check if error on lat || lng
+                    if ($this->check_error_visit_latlng($data)===true){
                         $data['google_time_pessimistic'] = 0;
                         $data['google_distance'] = 0;
                     }
-                    else{
-                        // get time & distance
-                        // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
-                        try{
-                            $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
-                            $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
-                        }
-                        catch (\Exception $exception){
-                            $g_time_pess=0;
-                            $g_distance=0;
-                        }
-                        $data['google_time_pessimistic'] = $g_time_pess;
-                        $data['google_distance'] = $g_distance;
-                    }
-                }
 
-                // check last GPS readings
-                if ($this->check_last_GPS_is_Visit($data)===true){
-                    $data['last_read_distance'] = 0;
-                }
-                else{
-                    $r2_google = $this->calculateDistanceP($data);
-                    if ($r2_google===FALSE){
+                    else{
+                        // then ask google
+                        // ask google
+                        $res_google = $this->ask_google($data);
+                        if ($res_google===false) {
+                            $data['google_time_pessimistic'] = 0;
+                            $data['google_distance'] = 0;
+                        }
+                        else{
+                            // get time & distance
+                            // $g_time = $res_google['rows'][0]['elements'][0]['duration']['value'];
+                            try{
+                                $g_time_pess = $res_google['rows'][0]['elements'][0]['duration_in_traffic']['value'];
+                                $g_distance = $res_google['rows'][0]['elements'][0]['distance']['value'];
+                            }
+                            catch (\Exception $exception){
+                                $g_time_pess=0;
+                                $g_distance=0;
+                            }
+                            $data['google_time_pessimistic'] = $g_time_pess;
+                            $data['google_distance'] = $g_distance;
+                        }
+                    }
+
+                    // check last GPS readings
+                    if ($this->check_last_GPS_is_Visit($data)===true){
                         $data['last_read_distance'] = 0;
                     }
                     else{
-                        $data['last_read_distance'] = $r2_google;
+                        $r2_google = $this->calculateDistanceP($data);
+                        if ($r2_google===FALSE){
+                            $data['last_read_distance'] = 0;
+                        }
+                        else{
+                            $data['last_read_distance'] = $r2_google;
+                        }
                     }
                 }
-            }
 
-            // create
-            $this->create($data);
-            print_r('created...');
-            echo "\n";
+
+                // create
+                $this->create($data);
+            }
         }
+
     }
 
     public function test_task()
