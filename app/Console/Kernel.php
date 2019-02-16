@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\VisitKSAController;
 use App\Http\Controllers\VisitSYRController;
 use App\Http\Controllers\VisitJORController;
 use Illuminate\Console\Scheduling\Schedule;
@@ -34,6 +35,7 @@ class Kernel extends ConsoleKernel
         $irq = new VisitController();
         $jor = new VisitJORController();
         $syr = new VisitSYRController();
+        $ksa = new VisitKSAController();
         try{
             $schedule->call(function () use($irq){
                 $irq->task();
@@ -54,7 +56,7 @@ class Kernel extends ConsoleKernel
                 ->appendOutputTo(storage_path('app/aassdd.log'))
                 ->withoutOverlapping();
         }
-        catch (\Exception $e){echo "error in Iraq";}
+        catch (\Exception $e){echo "error in JOR";}
 
         try{
             $schedule->call(function () use($syr){
@@ -65,7 +67,19 @@ class Kernel extends ConsoleKernel
                 ->appendOutputTo(storage_path('app/aassdd.log'))
                 ->withoutOverlapping();
         }
-        catch (\Exception $e){echo "error in Iraq";}
+        catch (\Exception $e){echo "error in SYR";}
+
+        try{
+            $schedule->call(function () use($ksa){
+                $ksa->task();
+            })
+                ->name('googleKSA')
+                ->everyMinute()
+                ->appendOutputTo(storage_path('app/aassdd.log'))
+                ->withoutOverlapping();
+        }
+        catch (\Exception $e){echo "error in KSA";}
+
     }
 
     /**
