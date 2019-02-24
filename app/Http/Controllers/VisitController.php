@@ -550,6 +550,7 @@ class VisitController extends Controller
 			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
 			and visit.salesmanno = V_HH_VisitDuration.salesmanno
 			and visit.starttime > V_HH_VisitDuration.starttime
+			AND not(PositiveVisit = 0 and NCReasonID is NULL)
 			order by starttime desc
 			) as last_id
 		,	(select top 1  [Longitude]
@@ -558,6 +559,7 @@ class VisitController extends Controller
 			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
 			and visit.salesmanno = V_HH_VisitDuration.salesmanno
 			and visit.starttime > V_HH_VisitDuration.starttime
+			AND not(PositiveVisit = 0 and NCReasonID is NULL)
 			order by starttime desc
 			) as last_lng
 		,	(select top 1 [Latitude]
@@ -566,6 +568,7 @@ class VisitController extends Controller
 			where CAST(visit.starttime as Date) = CAST(V_HH_VisitDuration.starttime as Date)
 			and visit.salesmanno = V_HH_VisitDuration.salesmanno
 			and visit.starttime > V_HH_VisitDuration.starttime
+			AND not(PositiveVisit = 0 and NCReasonID is NULL)
 			order by starttime desc
 			) as last_lat
 , (
@@ -636,7 +639,8 @@ class VisitController extends Controller
       FROM [dbo].[V_HH_VisitDuration] as visit
       INNER JOIN dbo.HH_VisitVerification as verify ON visit.ID = verify.VisitNo
       WHERE visit.starttime > ? 
-            AND visit.SalesmanNo = ?  
+            AND visit.SalesmanNo = ?
+            AND not(visit.PositiveVisit = 0 and visit.NCReasonID is NULL)  
         ", [$visit_time , $salesman]);
 
         return empty($new_visits)? false : $new_visits;
