@@ -187,8 +187,8 @@
         let yeticon = 'assets/imgs/visitYet.png';
         let balanceYet = 'assets/imgs/redskel.png';
         let balanceDone = 'assets/imgs/greskel.png';
-        let vIcon = 'assets/imgs/visitg.gif';
-        let skelIcon = 'assets/imgs/skelg.gif';
+        let vIcon = 'assets/imgs/dealsmm.png';
+        let skelIcon = 'assets/imgs/dealsmm.png';
         let url = yeticon;
         if( (balance!=null && balance!=undefined) && visited  )
             url = balanceDone;
