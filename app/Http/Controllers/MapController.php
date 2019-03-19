@@ -245,15 +245,6 @@ order by Balance desc
         // format response
     }
 
-    public function get_Not_visited_customers(Request $request)
-    {
-        $city = 'IQ010';
-        // get customers's route:
-        if (!$todayCustomers = $this->get_not_visited_3m($city))
-            return response()->json('No Customers In Today\'s Route',500);
-        return $todayCustomers;
-    }
-
 
     ///////////////////////////////////////////////
     // Date Functions
@@ -491,28 +482,5 @@ order by Balance desc
         return json_decode((string) $response->getBody(), true);
     }
 
-
-    private function get_not_visited_3m($city){
-        $customers = DB::connection('wri')->select("
-        SELECT
-cus.CustomerNo as cusCode
-, cus.CustomerNameA as cusName
-, cus.Latitude as cusLat
-, cus.Longitude as cusLng
-, ord.Date as lastDate
-, ord.NetTotal as NetTotal
-FROM
-HH_Customer as cus
-inner join AR_order as ord on ord.CustomerNo = cus.CustomerNo and ord.Date >= DATEADD(DAY, -90, GETDATE())
-
-WHERE cus.BUID = 105
-and cus.Inactive = 0
-and cus.Latitude !=0 and cus.Latitude is not null
-and cus.Longitude !=0 and cus.Longitude is not null
-and cus.cityno = ?	  
-        " , [$city]);
-
-        return empty($customers)? false : $customers;
-    }
 
 }
