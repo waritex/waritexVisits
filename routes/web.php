@@ -58,7 +58,8 @@ Route::post('/readings','ScannerController@catch_readings');
 /// Test URLs
 ///
 ///////////////////////////////////////////////////////////////////
-Route::get('/test' , 'VisitController@test_task');
+Route::get('/test' , 'ScannerController@test');
+Route::get('/tt' , 'ScannerController@ask_here');
 
 Route::get('/date' , 'MapController@get_today_name');
 Route::get('/schedule' , 'MapController@get_schedule');

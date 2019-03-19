@@ -11,6 +11,10 @@ use Carbon\Carbon;
 
 class ScannerController extends Controller
 {
+    public function test()
+    {
+        return view('here');
+    }
     public function get_customers(Request $request)
     {
         $city = 'IQ010';
@@ -101,5 +105,30 @@ and cus.cityno = ?
 
     private function save_road($road){
         return ($road);
+    }
+
+    public function ask_here(){
+        $next_day = today()->addDay();
+        $todayReadings = ScannerGPS::where('times','>=',today()->subDay()->toDateString())->where('times','<',$next_day->toDateString())->get();
+        $s = "SEQNR,	LATITUDE,	LONGITUDE \n";
+        foreach ($todayReadings as $k => $reading){
+            $str = $k .", ". $reading->lat .", ". $reading->lng;
+            $s = $s . $str . "\n";
+        }
+        // return $s;
+        $app_code = "RGNknF0atqjNJtKv6jqNng";
+        $app_id = "wJfp8Qci1Gq0vlw64DRH";
+        $utl = "https://fleet.cit.api.here.com/2/calculateroute.json?routeMatch=1&mode=fastest;car;traffic:disabled&app_id=$app_id&app_code=$app_code";
+        $http = new Client;
+        try{
+            $response = $http->post($utl ,['body' => $s]);
+//            return $response;
+        }
+        catch (\Exception $exception){
+            return false;
+        }
+//        return json_decode((string) $response->getBody(), true);
+        $asd = $response->getBody();
+        return view('here',compact('asd'));
     }
 }
