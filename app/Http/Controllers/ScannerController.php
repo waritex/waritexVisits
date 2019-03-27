@@ -189,6 +189,7 @@ and cus.cityno = ?
       FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
+      and HH_Customer.CityNo is not null 
         " , [$salesman , $weekNum]);
 
         return empty($routes)? false : $routes;
