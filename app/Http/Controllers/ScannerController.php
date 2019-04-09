@@ -54,22 +54,22 @@ class ScannerController extends Controller
 
     private function get_not_visited_3months($city){
         $customers = DB::connection('wri')->select("
-        SELECT
-cus.CustomerNo as cusCode
-, cus.CustomerNameA as cusName
-, cus.Latitude as cusLat
-, cus.Longitude as cusLng
-, ord.Date as lastDate
-, ord.NetTotal as NetTotal
+SELECT
+	cus.CustomerNo as cusCode
+	, cus.CustomerNameA as cusName
+	, cus.Latitude as cusLat
+	, cus.Longitude as cusLng
+	, s.maxo as lastDate
 FROM
-HH_Customer as cus
-inner join AR_order as ord on ord.CustomerNo = cus.CustomerNo and ord.Date >= DATEADD(DAY, -90, GETDATE())
-
-WHERE cus.BUID = 105
-and cus.Inactive = 0
-and cus.Latitude !=0 and cus.Latitude is not null
-and cus.Longitude !=0 and cus.Longitude is not null
-and cus.cityno = ?	  
+	HH_Customer as cus
+inner join (SELECT x.CustomerNo , Max(x.Date) as maxo FROM AR_order as x WHERE x.BUID = 105 group by x.customerno) as s on s.CustomerNo = cus.CustomerNo
+WHERE 
+	cus.BUID = 105
+	and cus.Inactive = 0
+	and cus.Latitude !=0 and cus.Latitude is not null
+	and cus.Longitude !=0 and cus.Longitude is not null
+	and s.maxo >= DATEADD(DAY, -90, GETDATE())
+	and cus.cityno = ?	  
         " , [$city]);
 
         return empty($customers)? false : $customers;
