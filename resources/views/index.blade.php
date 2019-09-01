@@ -129,14 +129,14 @@
             <!-- /Section header -->
 
             <!-- about -->
-            <div class="col-md-4">
-                <div class="about">
+            {{--<div class="col-md-4">--}}
+                {{--<div class="about">--}}
                     {{--<i class="fa fa-cogs"></i>--}}
-                    <h3>Waritex Syria</h3>
+                    {{--<h3>Waritex Syria</h3>--}}
                     {{--<p>Maecenas tempus tellus eget condimentum rhoncus sem quam semper libero sit amet.</p>--}}
-                    <a href="http://waritex-syria.com" target="_blank">know more</a>
-                </div>
-            </div>
+                    {{--<a href="http://waritex-syria.com" target="_blank">know more</a>--}}
+                {{--</div>--}}
+            {{--</div>--}}
             <!-- /about -->
             <!-- about -->
             <div class="col-md-4">
