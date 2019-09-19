@@ -107,8 +107,8 @@ order by Balance desc
                 }
                 else{
                     try{
-                        $data['lat'] = $postionData['vehicle'][0]['latitude'];
-                        $data['lng'] = $postionData['vehicle'][0]['longitude'];
+                        $data['lat'] = $postionData['vehicles'][0]['latitude'];
+                        $data['lng'] = $postionData['vehicles'][0]['longitude'];
                         $data['time'] = Carbon::createFromTimestamp($postionData['vehicle'][0]['unix_ts']);
                     }
                     catch (\Exception $e){}
@@ -214,8 +214,8 @@ order by Balance desc
         }
         else{
             try{
-                $data['lat'] = $postionData['vehicle'][0]['latitude'];
-                $data['lng'] = $postionData['vehicle'][0]['longitude'];
+                $data['lat'] = $postionData['vehicles'][0]['latitude'];
+                $data['lng'] = $postionData['vehicles'][0]['longitude'];
                 $data['time'] = Carbon::createFromTimestamp($postionData['vehicle'][0]['unix_ts']);
             }
             catch (\Exception $e){}
