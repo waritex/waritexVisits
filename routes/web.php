@@ -30,6 +30,9 @@ Route::get('/get2/{visit_id}' , 'VisitController@get_v2');
 Route::get('/get_distance/{lat1}/{lon1}/{lat2}/{lon2}/{unit}' , 'VisitController@calculateDistance');
 Route::get('/get_distance2/{lat1}/{lon1}/{lat2}/{lon2}' , 'VisitController@getDistance');
 Route::get('/readgps' , 'GPSReadsController@store');
+
+// KSA distinace
+Route::get('/calcd' , 'KsaDistinaceController@distance');
 ///////////////////////////////////////////////////////////////////
 ///
 /// Map Application
@@ -44,6 +47,7 @@ Route::post('/login', 'AuthController@auth');
 Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
 Route::post('/get_all_customers','MapController@get_all_customers')->name('get_all_customers');
 Route::post('/get_customers','MapController@get_customers');
+Route::post('/get_customers_area','MapController@get_customers_by_areas');
 Route::post('/get_noloc','MapController@get_no_loc');
 Route::post('/get_schedule','MapController@get_schedule');
 Route::post('/get_car_location','MapController@get_car_location');
@@ -58,7 +62,7 @@ Route::post('/readings','ScannerController@catch_readings');
 /// Test URLs
 ///
 ///////////////////////////////////////////////////////////////////
-Route::get('/test' , 'ScannerController@test');
+Route::get('/test' , 'MapController@get_customer_items_info');
 Route::get('/tt' , 'ScannerController@ask_here');
 
 Route::get('/date' , 'MapController@get_today_name');

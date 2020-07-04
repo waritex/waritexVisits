@@ -62,6 +62,7 @@ order by Balance desc
         if (! $visits = $this->get_today_visits_ordered($salesman,$today,$date_range)){
             return $todayCustomers;
         }
+        $info = $this->get_customer_items_info($salesman,$weekNumber,$dayString);
         $res = [];
         foreach ($todayCustomers as $customer){
             foreach ($visits as $visit){
@@ -72,6 +73,11 @@ order by Balance desc
                         continue 2;
                     }
                     break;
+                }
+            }
+            foreach ($info as $i=>$v){
+                if ( trim($i) === trim($customer->CustomerID) ){
+                    $customer->info = $info[$i];
                 }
             }
             $res[] = $customer;
@@ -245,6 +251,29 @@ order by Balance desc
         // format response
     }
 
+    public function get_customers_by_areas(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Ask Waritex For This',500);
+        $today = now()->toDateString();
+        // get customers's route:
+        if (!$Customers = $this->get_routes_customers_by_area($salesman))
+            return response()->json('No Customers In Today\'s Route',500);
+        $info = $this->get_customer_items_info($salesman,false,false);
+        $res = [];
+        foreach ($Customers as $customer){
+            foreach ($info as $i=>$v){
+                if ( trim($i) === trim($customer->CustomerID) ){
+                    $customer->info = $info[$i];
+                }
+            }
+            $res[] = $customer;
+        }
+        $res = collect($res)->groupBy('city');
+        return $res;
+    }
+
 
     ///////////////////////////////////////////////
     // Date Functions
@@ -291,19 +320,31 @@ order by Balance desc
     ///////////////////////////////////////////////
     private function get_today_routes_from_salesbuzz($salesman , $weekNum , $day){
         $routes = DB::connection('wri')->select("
-      SELECT 
-       V_JPlans.[AssignedTO]			as SalesmanCode
-      ,V_JPlans.[CustomerID]			as CustomerID
-	  ,HH_Customer.[CustomerNameA]		as CustomerName
-	  ,HH_Customer.[Latitude]			as Lat
-      ,HH_Customer.[Longitude]			as Lng
-      ,case  when ROUND(Balance , 0) =0 then null else    ROUND(Balance , 0)  end          as Balance 
-      ,CASE WHEN hh_CustomerAttr.AttrID = 'مقطوع جلي' OR hh_CustomerAttr.AttrID = 'غير متعامل جلي' THEN 1 ELSE 0 END as Deal
-      FROM [dbo].[V_JPlans]
-      INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-      LEFT JOIN hh_CustomerAttr on hh_CustomerAttr.CustomerNo = V_JPlans.CustomerID and hh_CustomerAttr.AttrID in ('مقطوع جلي','متعامل جلي','غير متعامل جلي')
+SELECT *
+, CASE WHEN t.LastInvoiceDate > 90 THEN 1 ELSE CASE WHEN t.LastInvoiceDate > 30 THEN 2 ELSE 0 END END as DealCut
+, CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
+, CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
+, ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
+, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
+FROM
+(
+SELECT 
+V_JPlans.[AssignedTO]			as SalesmanCode
+,V_JPlans.[CustomerID]			as CustomerID
+,HH_Customer.[CustomerNameA]		as CustomerName
+,HH_Customer.[Latitude]			as Lat
+,HH_Customer.[Longitude]			as Lng
+, ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
+, ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
+, ( SELECT SUM(ord.NetTotal) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
+, ( SELECT count(ord.OrderID) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+
+FROM [dbo].[V_JPlans]
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo=?)+'%') 
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
-      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
+      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL) and HH_Customer.inactive = 0
+) as t
         " , [$salesman , $weekNum]);
 
         return empty($routes)? false : $routes;
@@ -457,6 +498,89 @@ order by Balance desc
         $schedule = DB::connection('wri')->select($SQL , [$salesman , $salesman , $salesman , $salesman , $salesman , $salesman]);
         return empty($schedule) ? false  : $schedule;
     }
+
+    public function get_customer_items_info($salesman=false , $weekNum=false , $day=false){
+        $SQL = "
+SELECT 
+vp.[CustomerID]			as CustomerID
+, t.*
+, Convert(int,Round(t.QTY/t.DealNumber,0)) as avgQty
+FROM [dbo].[V_JPlans] as vp
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = vp.CustomerID
+INNER JOIN
+(
+SELECT
+ord.CustomerNo
+, l.ItemID
+, HH_Item.ItemNameA
+, COUNT(distinct ord.Date) DealNumber
+, CASE WHEN DATEDIFF(DAY,MAX(ord.Date),GETDATE()) > 90 THEN 1 ELSE 0 END as CUT
+, SUM(l.Qty) as QTY
+FROM AR_OrderLines as l
+INNER JOIN AR_Order as ord on ord.OrderID = l.OrderID
+INNER JOIN HH_Item on HH_Item.ItemNo = l.ItemID
+WHERE 1=1
+and ord.BUID = 105
+and l.FreeItem=0
+GROUP BY ord.CustomerNo , l.ItemID , ItemNameA
+) as t on t.CustomerNo = vp.CustomerID
+";
+        if ($weekNum===false && $day===false)
+            $SQL = $SQL . " WHERE vp.[AssignedTO] = ?   ";
+        else
+            $SQL = $SQL . " WHERE vp.[AssignedTO] = ?   AND  vp.[StartWeek] = ?  AND vp.$day = 1";
+
+        $SQL = $SQL . " AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
+ORDER BY t.DealNumber desc";
+
+        $info = DB::connection('wri')->select($SQL , [$salesman , $weekNum]);
+
+        return empty($info)? false : collect($info)->groupBy('CustomerID');
+    }
+
+    private function get_routes_customers_by_area($salesman){
+        $SQL = "
+SELECT *
+, CASE WHEN t.LastInvoiceDate > 90 THEN 1 ELSE CASE WHEN t.LastInvoiceDate > 30 THEN 2 ELSE 0 END END as DealCut
+, CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
+, CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
+, ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
+, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
+FROM
+(
+SELECT 
+V_JPlans.AssignedTO			as SalesmanCode
+,V_JPlans.CustomerID			as CustomerID
+,HH_Customer.CustomerNameA		as CustomerName
+,HH_Customer.Latitude			as Lat
+,HH_Customer.Longitude			as Lng
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_City.CityNameA
+, ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
+, ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
+, ( SELECT SUM(ord.NetTotal) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
+, ( SELECT count(ord.OrderID) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, atr.AttrID
+
+FROM V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo=?)+'%')
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
+
+WHERE 1=1
+AND V_JPlans.AssignedTO = ?
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
+AND HH_Customer.inactive = 0
+) as t
+        ";
+        $custs = DB::connection('wri')->select($SQL , [$salesman,$salesman]);
+        return empty($custs)? false : $custs;
+    }
+
+
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
 
