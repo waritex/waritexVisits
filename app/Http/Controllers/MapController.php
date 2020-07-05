@@ -528,12 +528,12 @@ GROUP BY ord.CustomerNo , l.ItemID , ItemNameA
         if ($weekNum===false && $day===false)
             $SQL = $SQL . " WHERE vp.[AssignedTO] = ?   ";
         else
-            $SQL = $SQL . " WHERE vp.[AssignedTO] = ?   AND  vp.[StartWeek] = ?  AND vp.$day = 1";
+            $SQL = $SQL . " WHERE vp.[AssignedTO] = ?   AND  vp.[StartWeek] = '$weekNum'  AND vp.$day = 1";
 
         $SQL = $SQL . " AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
 ORDER BY t.DealNumber desc";
 
-        $info = DB::connection('wri')->select($SQL , [$salesman , $weekNum]);
+        $info = DB::connection('wri')->select($SQL , [$salesman ]);
 
         return empty($info)? false : collect($info)->groupBy('CustomerID');
     }
