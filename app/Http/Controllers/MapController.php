@@ -325,7 +325,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
-, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
+--, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
 FROM
 (
 SELECT 
