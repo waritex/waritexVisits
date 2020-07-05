@@ -325,7 +325,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
---, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
+, CASE WHEN RegionNo != 'BGH' THEN RegionNameA ELSE CityNameA end as city
 FROM
 (
 SELECT 
@@ -338,10 +338,16 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
 , ( SELECT SUM(ord.NetTotal) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
 , ( SELECT count(ord.OrderID) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_City.CityNameA
 
 FROM [dbo].[V_JPlans]
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo = ? )+'%') 
+INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo = ? )+'%')
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo 
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
       AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL) and HH_Customer.inactive = 0
 ) as t
