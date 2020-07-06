@@ -336,8 +336,8 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 ,HH_Customer.[Longitude]			as Lng
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
-, ( SELECT SUM(ord.NetTotal) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
-, ( SELECT count(ord.OrderID) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
+, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , HH_Customer.CityNo
 , HH_Customer.RegionNo
 , HH_Region.RegionNameA
@@ -566,8 +566,8 @@ V_JPlans.AssignedTO			as SalesmanCode
 , HH_City.CityNameA
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
-, ( SELECT SUM(ord.NetTotal) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
-, ( SELECT count(ord.OrderID) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
+, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , atr.AttrID
 
 FROM V_JPlans
