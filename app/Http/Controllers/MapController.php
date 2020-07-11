@@ -338,6 +338,7 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT MAX(s.Date) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , HH_Customer.CityNo
 , HH_Customer.RegionNo
 , HH_Region.RegionNameA
@@ -568,6 +569,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT MAX(s.Date) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , atr.AttrID
 
 FROM V_JPlans
