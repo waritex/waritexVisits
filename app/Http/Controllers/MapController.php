@@ -346,13 +346,14 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 
 FROM [dbo].[V_JPlans]
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo = ? )+'%')
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo 
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
       AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL) and HH_Customer.inactive = 0
+	  AND atr.AttrID is null
 ) as t
-        " , [$salesman , $salesman , $weekNum]);
+        " , [$salesman , $weekNum]);
 
         return empty($routes)? false : $routes;
     }
@@ -574,7 +575,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 
 FROM V_JPlans
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-INNER JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = (SELECT MAX(hh_AttributeDef.AttrID) FROM hh_AttributeDef WHERE hh_AttributeDef.AttrID like 'a'+(SELECT HH_Salesman.BUID FROM HH_Salesman WHERE HH_Salesman.SalesmanNo = ? )+'%')
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
 
@@ -582,9 +583,10 @@ WHERE 1=1
 AND V_JPlans.AssignedTO = ?
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
 AND HH_Customer.inactive = 0
+AND atr.AttrID is null
 ) as t
         ";
-        $custs = DB::connection('wri')->select($SQL , [$salesman,$salesman]);
+        $custs = DB::connection('wri')->select($SQL , [$salesman]);
         return empty($custs)? false : $custs;
     }
 
