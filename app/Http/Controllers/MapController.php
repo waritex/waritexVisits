@@ -326,6 +326,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
+, CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END as svg
 FROM
 (
 SELECT 
@@ -554,6 +555,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
+, CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END as svg
 FROM
 (
 SELECT 
