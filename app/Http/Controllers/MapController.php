@@ -326,7 +326,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
-, CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END as svg
+, CASE WHEN (t.LastVisitDate < 12) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"lawngreen\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END END as svg
 FROM
 (
 SELECT 
@@ -337,6 +337,8 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 ,HH_Customer.[Longitude]			as Lng
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
+, ( SELECT CONVERT(VARCHAR(10),MAX(ord.Date),111) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceD
+, ( SELECT CONVERT(VARCHAR(10),MAX(visit.starttime),111) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitD
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT MAX(s.Date) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
@@ -555,7 +557,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
-, CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END as svg
+, CASE WHEN (t.LastVisitDate < 12) THEN '{\"fillColor\":\"green\"}' ELSE CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"lawngreen\"}' ELSE CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' END END END as svg
 FROM
 (
 SELECT 
@@ -570,6 +572,8 @@ V_JPlans.AssignedTO			as SalesmanCode
 , HH_City.CityNameA
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
 , ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitDate
+, ( SELECT CONVERT(VARCHAR(10),MAX(ord.Date),111) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceD
+, ( SELECT CONVERT(VARCHAR(10),MAX(visit.starttime),111) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitD
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT MAX(s.Date) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
