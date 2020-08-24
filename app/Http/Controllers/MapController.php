@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\InfoEvents;
 use App\MapUser;
 use GuzzleHttp\Client;
 use App\Route;
@@ -85,6 +86,7 @@ order by Balance desc
 
         $res = collect($res);
         $res = $res->sortBy('visit_info.visit_time');
+        $this->save_info($request);
         return $res->values()->all();
 //        return $res;
 //        return response()->json($res , 200 ,['Content-type'=> 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
@@ -274,6 +276,24 @@ order by Balance desc
         return $res;
     }
 
+    public function save_info(Request $request)
+    {
+        $info = $request->post('info',false);
+        if ($info!==false && $info!=='null' && $info!==null){
+            foreach ($info as $i){
+                if (empty($i))
+                    continue;
+                $data = [
+                    'customerID'        => $i['cus_id'],
+                    'salesmanID'        => $i['salesman_id'],
+                    'dateTime'          => Carbon::parse($i['date_time']),
+                ];
+                InfoEvents::create($data);
+            }
+        }
+
+    }
+
 
     ///////////////////////////////////////////////
     // Date Functions
@@ -326,9 +346,10 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
-, CASE WHEN (t.LastVisitDate < 15) THEN '{\"fillColor\":\"lawngreen\"}' ELSE 
-  CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE 
-  CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' 
+, CASE WHEN t.distance > 100 THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  CASE WHEN (t.distance < 100 and t.opened = 1) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  CASE WHEN (t.distance < 100 and t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  NULL
   END END END as svg
 FROM
 (
@@ -349,12 +370,19 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , HH_Customer.RegionNo
 , HH_Region.RegionNameA
 , HH_City.CityNameA
+, CASE WHEN wr.last_visit_lat is null or wr.last_visit_lon is NULL THEN NULL ELSE (geography::Point(ISNULL(wr.last_visit_lat,0), isnull(wr.last_visit_lon,0), 4326).STDistance( geography::Point(HH_Customer.Latitude, HH_Customer.Longitude, 4326) ) ) END distance
+, (
+	SELECT top 1 1 FROM WR_Map_Info_Events as ev 
+	WHERE ev.customerID = V_JPlans.CustomerID and ev.salesmanID = V_JPlans.[AssignedTO] 
+	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date) between -5 and 30)  ) 
+) as opened
 
 FROM [dbo].[V_JPlans]
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo 
+LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DAY , wr.last_visit_date , GETDATE() ) < 28
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
       AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL) and HH_Customer.inactive = 0
 	  AND atr.AttrID is null
@@ -560,9 +588,10 @@ SELECT *
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
-, CASE WHEN (t.LastVisitDate < 15) THEN '{\"fillColor\":\"lawngreen\"}' ELSE 
-  CASE WHEN (t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\"}' ELSE 
-  CASE WHEN (t.LastInvoiceDate < 90) THEN '{\"fillColor\":\"yellow\"}' 
+, CASE WHEN t.distance > 100 THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  CASE WHEN (t.distance < 100 and t.opened = 1) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  CASE WHEN (t.distance < 100 and t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+  NULL
   END END END as svg
 FROM
 (
@@ -584,12 +613,19 @@ V_JPlans.AssignedTO			as SalesmanCode
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT MAX(s.Date) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , atr.AttrID
+, CASE WHEN wr.last_visit_lat is null or wr.last_visit_lon is NULL THEN NULL ELSE (geography::Point(ISNULL(wr.last_visit_lat,0), isnull(wr.last_visit_lon,0), 4326).STDistance( geography::Point(HH_Customer.Latitude, HH_Customer.Longitude, 4326) ) ) END distance
+, (
+	SELECT top 1 1 FROM WR_Map_Info_Events as ev 
+	WHERE ev.customerID = V_JPlans.CustomerID and ev.salesmanID = V_JPlans.[AssignedTO] 
+	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date) between -5 and 30)  ) 
+) as opened
 
 FROM V_JPlans
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DAY , wr.last_visit_date , GETDATE() ) < 28
 
 WHERE 1=1
 AND V_JPlans.AssignedTO = ?
