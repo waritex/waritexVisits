@@ -276,6 +276,18 @@ order by Balance desc
         return $res;
     }
 
+    public function get_report_by_areas(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        if (!$salesman)
+            return response()->json('Error In User Please Ask Waritex For This',500);
+        $today = now()->toDateString();
+        // get customers's route:
+        if (!$Customers = $this->getReportInfo($salesman))
+            return response()->json('No Customers In Today\'s Route',500);
+        return $Customers;
+    }
+
     public function save_info(Request $request)
     {
         $info = $request->post('info',false);
@@ -345,7 +357,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
-, CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
+, CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
 , CASE WHEN (t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
   CASE WHEN (t.distance < 100 and t.opened = 1 and t.LastVisitDate < 15) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
   CASE WHEN (t.distance < 100 and t.opened = 1 and t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
@@ -368,6 +380,7 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(s.Total)) ),0) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID) as MaxSales
 , HH_Customer.CityNo
 , HH_Customer.RegionNo
 , HH_Region.RegionNameA
@@ -589,7 +602,7 @@ SELECT *
 , CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
 , CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
 , ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
-, CASE WHEN RegionNo != 'BGH' THEN ('محافظة - ' + RegionNameA) ELSE CityNameA end as city
+, CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
 , CASE WHEN (t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
   CASE WHEN (t.distance < 100 and t.opened = 1 and t.LastVisitDate < 15) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
   CASE WHEN (t.distance < 100 and t.opened = 1 and t.LastVisitDate < 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
@@ -616,6 +629,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(s.Total)) ),0) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID) as MaxSales
 , atr.AttrID
 , CASE WHEN wr.last_visit_lat is null or wr.last_visit_lon is NULL THEN NULL ELSE (geography::Point(ISNULL(wr.last_visit_lat,0), isnull(wr.last_visit_lon,0), 4326).STDistance( geography::Point(HH_Customer.Latitude, HH_Customer.Longitude, 4326) ) ) END distance
 , (
@@ -642,6 +656,50 @@ AND atr.AttrID is null
         return empty($custs)? false : $custs;
     }
 
+    private function getReportInfo($salesman)
+    {
+        $SQL = "
+SELECT
+t.city
+    , ISNULL(CONVERT(DECIMAL(10,0),(MAX(t.total)) ),0) maxtotal
+, MAX(t.invoiceNo) invoiceNo
+, (SELECT COUNT(a.CustomerID) FROM WR_Map_Customers as a WHERE a.AssignedTO = t.AssignedTO and a.city = t.city) cc
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(SUM(a.NetTotal)) ),0) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentSales
+, ( SELECT COUNT(a.OrderID) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentInv
+FROM
+(
+SELECT
+CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
+, AssignedTO
+, CONCAT(YEAR(ord.date),'--',Month(ord.date)) as date
+, SUM(ord.NetTotal) as total
+, COUNT(ord.OrderID) as invoiceNo
+FROM
+V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN AR_Order as ord on ord.CustomerNo = V_JPlans.CustomerID and ord.OrderType = 0
+
+WHERE 1=1
+AND V_JPlans.AssignedTO = ?
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
+AND HH_Customer.inactive = 0
+AND atr.AttrID is null
+
+GROUP BY 
+CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
+, CONCAT(YEAR(ord.date),'--',Month(ord.date))
+, AssignedTO
+) as t
+GROUP BY t.city,t.AssignedTO
+
+        ";
+
+        $custs = DB::connection('wri')->select($SQL , [$salesman]);
+        return empty($custs)? false : $custs;
+    }
 
     ///////////////////////////////////////////////
     ///////////////////////////////////////////////
