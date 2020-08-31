@@ -659,14 +659,7 @@ AND atr.AttrID is null
     private function getReportInfo($salesman)
     {
         $SQL = "
-SELECT
-t.city
-    , ISNULL(CONVERT(DECIMAL(10,0),(MAX(t.total)) ),0) maxtotal
-, MAX(t.invoiceNo) invoiceNo
-, (SELECT COUNT(a.CustomerID) FROM WR_Map_Customers as a WHERE a.AssignedTO = t.AssignedTO and a.city = t.city) cc
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(SUM(a.NetTotal)) ),0) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentSales
-, ( SELECT COUNT(a.OrderID) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentInv
-FROM
+WITH tw AS
 (
 SELECT
 CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
@@ -692,9 +685,17 @@ GROUP BY
 CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
 , CONCAT(YEAR(ord.date),'--',Month(ord.date))
 , AssignedTO
-) as t
+)
+------------------------------------------------------------------------
+SELECT
+t.city
+, ISNULL(CONVERT(DECIMAL(10,0),(MAX(t.total)) ),0) maxtotal
+, ( SELECT tw.invoiceNo FROM tw WHERE tw.city = t.city and tw.total = MAX(t.total) ) invoiceNo
+, ( SELECT COUNT(a.CustomerID) FROM WR_Map_Customers as a WHERE a.AssignedTO = t.AssignedTO and a.city = t.city) cc
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(SUM(a.NetTotal)) ),0) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentSales
+, ( SELECT COUNT(a.OrderID) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentInv
+FROM tw as t
 GROUP BY t.city,t.AssignedTO
-
         ";
 
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
