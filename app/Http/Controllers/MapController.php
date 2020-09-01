@@ -698,6 +698,7 @@ city_tbl.city as city
 --, ( SELECT SUM(o2.orderid) FROM order_tbl o2 WHERE o2.city = city_tbl.city and o2.nettotal = (SELECT MAX(nettotal) FROM order_tbl WHERE order_tbl.city = city_tbl.city) ) maxSalesInv
 FROM
 city_tbl
+WHERE city is NOT NULL
         ";
 
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
