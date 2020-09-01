@@ -686,6 +686,7 @@ LEFT JOIN HH_Region on HH_Region.RegionNo = cus.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = cus.CityNo and HH_City.RegionNo = cus.RegionNo
 WHERE 1=1
 AND V_JPlans.AssignedTO = ?
+AND V_JPlans.fri = 0
 AND cus.inactive = 0
 GROUP BY 
 CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
