@@ -659,43 +659,45 @@ AND atr.AttrID is null
     private function getReportInfo($salesman)
     {
         $SQL = "
-WITH tw AS
-(
-SELECT
+WITH 
+order_tbl AS (
+SELECT 
 CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
-, AssignedTO
-, CONCAT(YEAR(ord.date),'--',Month(ord.date)) as date
-, SUM(ord.NetTotal) as total
-, COUNT(ord.OrderID) as invoiceNo
-FROM
-V_JPlans
-INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+, CONCAT(YEAR(AR_Order.date),'--',Month(AR_Order.date)) as date
+, SUM(NetTotal) as nettotal
+, COUNT(OrderID) as orderid
+FROM AR_Order
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = AR_Order.CustomerNo
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
-LEFT JOIN AR_Order as ord on ord.CustomerNo = V_JPlans.CustomerID and ord.OrderType = 0
-
+GROUP BY
+CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
+, CONCAT(YEAR(AR_Order.date),'--',Month(AR_Order.date))
+)
+, 
+city_tbl AS (
+SELECT CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
+FROM
+V_JPlans
+INNER JOIN HH_Customer cus ON cus.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN HH_Region on HH_Region.RegionNo = cus.RegionNo
+LEFT JOIN HH_City on HH_City.CITYNO = cus.CityNo and HH_City.RegionNo = cus.RegionNo
 WHERE 1=1
 AND V_JPlans.AssignedTO = ?
-AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
-AND HH_Customer.inactive = 0
-AND atr.AttrID is null
-
+AND cus.inactive = 0
 GROUP BY 
-CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
-, CONCAT(YEAR(ord.date),'--',Month(ord.date))
-, AssignedTO
+CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
 )
-------------------------------------------------------------------------
+-----------------------------------------------------
 SELECT
-t.city
-, ISNULL(CONVERT(DECIMAL(10,0),(MAX(t.total)) ),0) maxtotal
-, ( SELECT tw.invoiceNo FROM tw WHERE tw.city = t.city and tw.total = MAX(t.total) ) invoiceNo
-, ( SELECT COUNT(a.CustomerID) FROM WR_Map_Customers as a WHERE a.AssignedTO = t.AssignedTO and a.city = t.city) cc
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(SUM(a.NetTotal)) ),0) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentSales
-, ( SELECT COUNT(a.OrderID) FROM AR_Order a WHERE a.CustomerNo in (SELECT wr.CustomerID FROM WR_Map_Customers wr WHERE wr.city = t.city) and Year(a.Date) = YEAR(GETDATE()) and Month(a.Date)=Month(GETDATE()) ) currentInv
-FROM tw as t
-GROUP BY t.city,t.AssignedTO
+city_tbl.city as city
+, ( SELECT MAX(tbl.nettotal) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as maxtotal
+, ( SELECT MAX(tbl.orderid) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as invoiceNo
+, ( SELECT SUM(o1.nettotal) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())-1) ) as currentSales
+, ( SELECT MAX(o1.orderid) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())-1) ) as currentInv
+--, ( SELECT SUM(o2.orderid) FROM order_tbl o2 WHERE o2.city = city_tbl.city and o2.nettotal = (SELECT MAX(nettotal) FROM order_tbl WHERE order_tbl.city = city_tbl.city) ) maxSalesInv
+FROM
+city_tbl
         ";
 
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
