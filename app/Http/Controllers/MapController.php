@@ -693,8 +693,8 @@ SELECT
 city_tbl.city as city
 , ( SELECT MAX(tbl.nettotal) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as maxtotal
 , ( SELECT MAX(tbl.orderid) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as invoiceNo
-, ( SELECT SUM(o1.nettotal) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())-1) ) as currentSales
-, ( SELECT MAX(o1.orderid) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())-1) ) as currentInv
+, ( SELECT SUM(o1.nettotal) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentSales
+, ( SELECT MAX(o1.orderid) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentInv
 --, ( SELECT SUM(o2.orderid) FROM order_tbl o2 WHERE o2.city = city_tbl.city and o2.nettotal = (SELECT MAX(nettotal) FROM order_tbl WHERE order_tbl.city = city_tbl.city) ) maxSalesInv
 FROM
 city_tbl
