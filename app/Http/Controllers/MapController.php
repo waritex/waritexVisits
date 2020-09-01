@@ -647,6 +647,7 @@ LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DA
 
 WHERE 1=1
 AND V_JPlans.AssignedTO = ?
+AND V_JPlans.fri = 0
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
 AND HH_Customer.inactive = 0
 AND atr.AttrID is null
