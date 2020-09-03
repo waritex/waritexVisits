@@ -389,7 +389,7 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , (
 	SELECT top 1 1 FROM WR_Map_Info_Events as ev 
 	WHERE ev.customerID = V_JPlans.CustomerID and ev.salesmanID = V_JPlans.[AssignedTO] 
-	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date) between -5 and 30)  ) 
+	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date)-180 between -5 and 30)  ) 
 ) as opened
 
 FROM [dbo].[V_JPlans]
@@ -635,7 +635,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , (
 	SELECT top 1 1 FROM WR_Map_Info_Events as ev 
 	WHERE ev.customerID = V_JPlans.CustomerID and ev.salesmanID = V_JPlans.[AssignedTO] 
-	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date) between -5 and 30)  ) 
+	and ( ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date)-180) between -5 and 30)  ) 
 ) as opened
 
 FROM V_JPlans
