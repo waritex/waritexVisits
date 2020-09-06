@@ -380,7 +380,7 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(s.Total)) ),0) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID) as MaxSales
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(tsales.total)) ),0) FROM (SELECT SUM(s.Total) as total FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID group by s.OrderID) as tsales ) as MaxSales
 , HH_Customer.CityNo
 , HH_Customer.RegionNo
 , HH_Region.RegionNameA
@@ -630,7 +630,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(s.Total)) ),0) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID) as MaxSales
+, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(tsales.total)) ),0) FROM (SELECT SUM(s.Total) as total FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID group by s.OrderID) as tsales ) as MaxSales
 , atr.AttrID
 , CASE WHEN wr.last_visit_lat is null or wr.last_visit_lon is NULL THEN NULL ELSE (geography::Point(ISNULL(wr.last_visit_lat,0), isnull(wr.last_visit_lon,0), 4326).STDistance( geography::Point(HH_Customer.Latitude, HH_Customer.Longitude, 4326) ) ) END distance
 , (
