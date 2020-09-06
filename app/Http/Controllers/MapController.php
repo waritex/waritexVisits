@@ -377,7 +377,7 @@ V_JPlans.[AssignedTO]			as SalesmanCode
 , ( SELECT CONVERT(VARCHAR(10),MAX(ord.Date),111) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceD
 , ( SELECT CONVERT(VARCHAR(10),MAX(visit.starttime),111) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitD
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
-, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID group by ord.OrderID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
 , ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(tsales.total)) ),0) FROM (SELECT SUM(s.Total) as total FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID group by s.OrderID) as tsales ) as MaxSales
@@ -627,7 +627,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , ( SELECT CONVERT(VARCHAR(10),MAX(ord.Date),111) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceD
 , ( SELECT CONVERT(VARCHAR(10),MAX(visit.starttime),111) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID ) as LastVisitD
 , ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
-, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as InvNumber
+, ( SELECT count(ord.OrderID) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID group by ord.OrderID ) as InvNumber
 , ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
 , ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
 , ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(tsales.total)) ),0) FROM (SELECT SUM(s.Total) as total FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID group by s.OrderID) as tsales ) as MaxSales
