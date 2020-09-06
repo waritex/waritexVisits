@@ -571,6 +571,7 @@ ord.CustomerNo
 , l.ItemID
 , HH_Item.ItemNameA
 , COUNT(distinct ord.Date) DealNumber
+, DATEDIFF(DAY,MAX(ord.Date),GETDATE()) as days
 , CASE WHEN DATEDIFF(DAY,MAX(ord.Date),GETDATE()) > 90 THEN 1 ELSE 0 END as CUT
 , SUM(l.Qty) as QTY
 FROM AR_OrderLines as l
