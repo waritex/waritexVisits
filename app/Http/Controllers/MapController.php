@@ -653,6 +653,7 @@ AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
 AND HH_Customer.inactive = 0
 AND atr.AttrID is null
 ) as t
+ORDER BY RegionNo , CityNameA
         ";
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
         return empty($custs)? false : $custs;
@@ -680,11 +681,13 @@ CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNam
 , 
 city_tbl AS (
 SELECT CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
+, CASE WHEN MAX(v.starttime) IS NULL THEN 0 ELSE 1 END as LastVisit
 FROM
 V_JPlans
 INNER JOIN HH_Customer cus ON cus.CustomerNo = V_JPlans.CustomerID
 LEFT JOIN HH_Region on HH_Region.RegionNo = cus.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = cus.CityNo and HH_City.RegionNo = cus.RegionNo
+LEFT JOIN V_HH_VisitDuration as v ON v.CUstomerNo = cus.CustomerNo and DATEDIFF(DAY,GETDATE(),v.starttime) = 0
 WHERE 1=1
 AND V_JPlans.AssignedTO = ?
 AND V_JPlans.fri = 0
@@ -700,9 +703,11 @@ city_tbl.city as city
 , ( SELECT ISNULL(CONVERT(DECIMAL(10,0),SUM(o1.nettotal) ),0) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentSales
 , ( SELECT MAX(o1.orderid) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentInv
 , ( SELECT SUM(o2.orderid) FROM order_tbl o2 WHERE o2.city = city_tbl.city and o2.nettotal = (SELECT MAX(nettotal) FROM order_tbl WHERE order_tbl.city = city_tbl.city) ) maxSalesInv
+, LastVisit
 FROM
 city_tbl
 WHERE city is NOT NULL
+ORDER BY city
         ";
 
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
