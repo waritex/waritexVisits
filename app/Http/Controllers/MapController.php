@@ -580,6 +580,7 @@ INNER JOIN HH_Item on HH_Item.ItemNo = l.ItemID
 WHERE 1=1
 and ord.BUID = 105
 and l.FreeItem=0
+AND HH_item.barcode2 != 2
 GROUP BY ord.CustomerNo , l.ItemID , ItemNameA
 ) as t on t.CustomerNo = vp.CustomerID
 ";
