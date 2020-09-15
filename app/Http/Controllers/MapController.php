@@ -557,6 +557,8 @@ LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DA
     }
 
     public function get_customer_items_info($salesman=false , $weekNum=false , $day=false){
+        $user = MapUser::where('code', $salesman)->first();
+        $buid = $user->buid;
         $SQL = "
 SELECT 
 vp.[CustomerID]			as CustomerID
@@ -578,7 +580,7 @@ FROM AR_OrderLines as l
 INNER JOIN AR_Order as ord on ord.OrderID = l.OrderID
 INNER JOIN HH_Item on HH_Item.ItemNo = l.ItemID
 WHERE 1=1
-and ord.BUID = 105
+and ord.BUID = ?
 and l.FreeItem=0
 AND HH_item.barcode2 != 2
 GROUP BY ord.CustomerNo , l.ItemID , ItemNameA
@@ -592,7 +594,7 @@ GROUP BY ord.CustomerNo , l.ItemID , ItemNameA
         $SQL = $SQL . " AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL)
 ORDER BY t.DealNumber desc";
 
-        $info = DB::connection('wri')->select($SQL , [$salesman ]);
+        $info = DB::connection('wri')->select($SQL , [$buid , $salesman ]);
 
         return empty($info)? false : collect($info)->groupBy('CustomerID');
     }
@@ -726,7 +728,7 @@ AND atr.AttrID is null
         else{
             $custs = DB::connection('wri')->select($SQL , [$salesman]);
         }
-        
+
         return empty($custs)? false : $custs;
     }
 
