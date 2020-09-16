@@ -360,9 +360,9 @@ SELECT *
 , CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
 ,
 CASE WHEN (t.LastVisitDate > 15 AND t.LastVisitDate <= 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-	CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-		CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-			CASE WHEN (t.LastVisitDate < 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
+	CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+		CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+			CASE WHEN (t.LastVisitDate <= 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
 			END
 		END
 	END
@@ -612,9 +612,9 @@ SELECT *
 , CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
 ,
 CASE WHEN (t.LastVisitDate > 15 AND t.LastVisitDate <= 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-	CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-		CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-			CASE WHEN (t.LastVisitDate < 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
+	CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+		CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+			CASE WHEN (t.LastVisitDate <= 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
 			END
 		END
 	END
@@ -676,9 +676,9 @@ ORDER BY RegionNo , CityNameA
 , CityNameA + ' - ' + AreaNameA as city
 ,
 CASE WHEN (t.LastVisitDate > 15 AND t.LastVisitDate <= 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-	CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-		CASE WHEN (t.LastVisitDate < 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-			CASE WHEN (t.LastVisitDate < 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
+	CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+		CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
+			CASE WHEN (t.LastVisitDate <= 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
 			END
 		END
 	END
