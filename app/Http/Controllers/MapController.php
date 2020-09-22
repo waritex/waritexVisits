@@ -277,7 +277,7 @@ order by Balance desc
             $buid = MapUser::where('code', $salesman)->first()->buid;
             $avgs = $this->getVisitsAvg($buid , $salesman);
         }
-        catch (\Exception $exception){dd($exception);}
+        catch (\Exception $exception){}
         return compact('res' , 'avgs');
     }
 
