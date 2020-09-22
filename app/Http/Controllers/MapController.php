@@ -275,11 +275,11 @@ order by Balance desc
         $res = collect($res)->groupBy('city');
         $buid = MapUser::where('code', $salesman)->first()->buid;
         $avgs = $this->getVisitsAvg($buid , $salesman);
-        try{
-            $buid = MapUser::where('code', $salesman)->first()->buid;
-            $avgs = $this->getVisitsAvg($buid , $salesman);
-        }
-        catch (\Exception $exception){}
+//        try{
+//            $buid = MapUser::where('code', $salesman)->first()->buid;
+//            $avgs = $this->getVisitsAvg($buid , $salesman);
+//        }
+//        catch (\Exception $exception){}
         return compact('res' , 'avgs');
     }
 
@@ -836,6 +836,8 @@ SELECT
 ) tbl
         ";
         $avg = DB::connection('wri')->select($SQL , [$buid , $salesman]);
+        print_r($buid);
+        print_r($salesman);
         print_r($avg);
         return empty($avg)? false : $avg;
     }
