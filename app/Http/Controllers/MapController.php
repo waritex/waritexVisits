@@ -803,11 +803,7 @@ ORDER BY city
 
     private function getVisitsAvg($buid ,$salesman){
         $SQL = " EXEC WR_Holidays_Calc ? , ? ";
-        DB::connection('wri')->enableQueryLog();
         $avg = DB::connection('wri')->select($SQL , [$buid , $salesman]);
-        print_r(
-            DB::connection('wri')->getQueryLog()
-        );
         return empty($avg)? false : $avg;
     }
 
