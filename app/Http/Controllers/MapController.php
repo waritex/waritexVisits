@@ -835,10 +835,9 @@ SELECT
 , (SELECT COUNT(p.CustomerID) FROM V_JPlans as p INNER JOIN HH_Customer on HH_Customer.CustomerNo = p.CustomerID LEFT JOIN hh_CustomerAttr atr on atr.CustomerNO = p.CustomerID and atr.AttrID = 'زبائن موجودة'  WHERE p.AssignedTO = @salesmanno and atr.AttrID IS NULL AND p.fri = 0 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) AND HH_Customer.inactive = 0 ) TotalCustomers
 ) tbl
         ";
+        DB::enableQueryLog();
         $avg = DB::connection('wri')->select($SQL , [$buid , $salesman]);
-        print_r($buid);
-        print_r($salesman);
-        print_r($avg);
+        print_r(DB::getQueryLog());
         return empty($avg)? false : $avg;
     }
 
