@@ -273,13 +273,11 @@ order by Balance desc
             $res[] = $customer;
         }
         $res = collect($res)->groupBy('city');
-        $buid = MapUser::where('code', $salesman)->first()->buid;
-        $avgs = $this->getVisitsAvg($buid , $salesman);
-//        try{
-//            $buid = MapUser::where('code', $salesman)->first()->buid;
-//            $avgs = $this->getVisitsAvg($buid , $salesman);
-//        }
-//        catch (\Exception $exception){}
+        try{
+            $buid = MapUser::where('code', $salesman)->first()->buid;
+            $avgs = $this->getVisitsAvg($buid , $salesman);
+        }
+        catch (\Exception $exception){}
         return compact('res' , 'avgs');
     }
 
@@ -835,7 +833,11 @@ SELECT
 , (SELECT COUNT(p.CustomerID) FROM V_JPlans as p INNER JOIN HH_Customer on HH_Customer.CustomerNo = p.CustomerID LEFT JOIN hh_CustomerAttr atr on atr.CustomerNO = p.CustomerID and atr.AttrID = 'زبائن موجودة'  WHERE p.AssignedTO = @salesmanno and atr.AttrID IS NULL AND p.fri = 0 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) AND HH_Customer.inactive = 0 ) TotalCustomers
 ) tbl
         ";
+        DB::connection('wri')->enableQueryLog();
         $avg = DB::connection('wri')->select(DB::raw($SQL));
+        print_r(
+            DB::connection('wri')->getQueryLog()
+        );
         return empty($avg)? false : $avg;
     }
 
