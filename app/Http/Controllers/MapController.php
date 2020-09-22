@@ -821,7 +821,7 @@ SET @StartDate = DATEADD(month, DATEDIFF(month, 0, @dt), 0)
 SET @EndDate = EOMONTH(@dt)
 SET @fridays = datepart(wk, @EndDate) - datepart(wk,dateadd(m, DATEDIFF(M, 0, @EndDate), 0)) + 1 - CASE WHEN DATENAME(dw, @StartDate) != 'Friday' THEN 1 ELSE 0 END
 SET @cufridays = datepart(wk, @dt) - datepart(wk,dateadd(m, DATEDIFF(M, 0, @dt), 0)) + 1 - CASE WHEN DATENAME(dw, @StartDate) != 'Friday' THEN 1 ELSE 0 END
-SET @remain_holidays = (SELECT COUNT(WR_Holidays.date) FROM WR_Holidays WHERE WR_Holidays.buid = @buid AND WR_Holidays.date >= @dt AND WR_Holidays.date < @EndDate+1)
+SET @remain_holidays = (SELECT COUNT(WR_Holidays.date) FROM WR_Holidays WHERE WR_Holidays.buid = @buid AND WR_Holidays.date >= @dt AND WR_Holidays.date <= @EndDate)
 SELECT
 *
 , CASE WHEN tbl.WorkinkDays = 0 THEN tbl.TotalCustomers/tbl.RemainWokingDays ELSE (tbl.CustomerVisits/tbl.WorkinkDays) END AvgVisits
