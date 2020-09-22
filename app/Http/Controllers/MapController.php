@@ -814,8 +814,8 @@ DECLARE @cufridays int
 DECLARE @fridays int
 DECLARE @remain_holidays int
 set datefirst 5
-SET @buid = ?
-SET @salesmanno = ?
+SET @buid = '$buid'
+SET @salesmanno = '$salesman'
 SET @dt = GETDATE()
 SET @StartDate = DATEADD(month, DATEDIFF(month, 0, @dt), 0)
 SET @EndDate = EOMONTH(@dt)
@@ -835,7 +835,7 @@ SELECT
 , (SELECT COUNT(p.CustomerID) FROM V_JPlans as p INNER JOIN HH_Customer on HH_Customer.CustomerNo = p.CustomerID LEFT JOIN hh_CustomerAttr atr on atr.CustomerNO = p.CustomerID and atr.AttrID = 'زبائن موجودة'  WHERE p.AssignedTO = @salesmanno and atr.AttrID IS NULL AND p.fri = 0 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) AND HH_Customer.inactive = 0 ) TotalCustomers
 ) tbl
         ";
-        $avg = DB::connection('wri')->select(DB::raw($SQL) , [$buid , $salesman]);
+        $avg = DB::connection('wri')->select(DB::raw($SQL));
         return empty($avg)? false : $avg;
     }
 
