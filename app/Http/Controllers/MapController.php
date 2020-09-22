@@ -273,7 +273,12 @@ order by Balance desc
             $res[] = $customer;
         }
         $res = collect($res)->groupBy('city');
-        return $res;
+        try{
+            $buid = MapUser::where('code', $salesman)->first()->buid;
+            $avgs = $this->getVisitsAvg($buid , $salesman);
+        }
+        catch (\Exception $exception){}
+        return compact('res' , 'avgs');
     }
 
     public function get_report_by_areas(Request $request)
@@ -794,6 +799,42 @@ ORDER BY city
 
         $custs = DB::connection('wri')->select($SQL , [$salesman]);
         return empty($custs)? false : $custs;
+    }
+
+    private function getVisitsAvg($buid ,$salesman){
+        $SQL = "
+DECLARE @buid nvarchar(MAX)
+DECLARE @salesmanno nvarchar(MAX)
+DECLARE @dt DATETIME
+DECLARE @StartDate DATETIME
+DECLARE @EndDate DATETIME
+DECLARE @cufridays int
+DECLARE @fridays int
+DECLARE @remain_holidays int
+set datefirst 5
+SET @buid = ?
+SET @salesmanno = ?
+SET @dt = GETDATE()
+SET @StartDate = DATEADD(month, DATEDIFF(month, 0, @dt), 0)
+SET @EndDate = EOMONTH(@dt)
+SET @fridays = datepart(wk, @EndDate) - datepart(wk,dateadd(m, DATEDIFF(M, 0, @EndDate), 0)) + 1 - CASE WHEN DATENAME(dw, @StartDate) != 'Friday' THEN 1 ELSE 0 END
+SET @cufridays = datepart(wk, @dt) - datepart(wk,dateadd(m, DATEDIFF(M, 0, @dt), 0)) + 1 - CASE WHEN DATENAME(dw, @StartDate) != 'Friday' THEN 1 ELSE 0 END
+SET @remain_holidays = (SELECT COUNT(WR_Holidays.date) FROM WR_Holidays WHERE WR_Holidays.buid = @buid AND WR_Holidays.date >= @dt AND WR_Holidays.date < @EndDate+1)
+SELECT
+*
+, CASE WHEN tbl.WorkinkDays = 0 THEN tbl.TotalCustomers/tbl.RemainWokingDays ELSE (tbl.CustomerVisits/tbl.WorkinkDays) END AvgVisits
+, ((tbl.TotalCustomers - tbl.CustomerVisits) / tbl.RemainWokingDays) as AvgShould
+FROM
+(
+SELECT
+(DATEDIFF(dd, @dt, @EndDate)) - (@fridays-@cufridays) - @remain_holidays as RemainWokingDays
+, (SELECT COUNT(distinct v.CUstomerNo) FROM V_HH_VisitDuration v WHERE v.SalesmanNo = @salesmanno and v.starttime >= @StartDate) as CustomerVisits
+, (SELECT COUNT(distinct CAST(v.starttime as date)) FROM V_HH_VisitDuration v WHERE v.SalesmanNo = @salesmanno and v.starttime >= @StartDate) as WorkinkDays
+, (SELECT COUNT(p.CustomerID) FROM V_JPlans as p INNER JOIN HH_Customer on HH_Customer.CustomerNo = p.CustomerID LEFT JOIN hh_CustomerAttr atr on atr.CustomerNO = p.CustomerID and atr.AttrID = 'زبائن موجودة'  WHERE p.AssignedTO = @salesmanno and atr.AttrID IS NULL AND p.fri = 0 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) AND HH_Customer.inactive = 0 ) TotalCustomers
+) tbl
+        ";
+        $avg = DB::connection('wri')->select($SQL , [$buid , $salesman]);
+        return empty($avg)? false : $avg;
     }
 
     ///////////////////////////////////////////////
