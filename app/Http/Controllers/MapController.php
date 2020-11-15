@@ -583,7 +583,7 @@ ord.CustomerNo
 , COUNT(distinct ord.Date) DealNumber
 , DATEDIFF(DAY,MAX(ord.Date),GETDATE()) as days
 , CASE WHEN DATEDIFF(DAY,MAX(ord.Date),GETDATE()) > 90 THEN 1 ELSE 0 END as CUT
-, SUM(l.Qty) as QTY
+, SUM(dbo.GetUOMConvFactor(l.ItemID,'PCS',l.UOM)*l.Qty) as QTY
 FROM AR_OrderLines as l
 INNER JOIN AR_Order as ord on ord.OrderID = l.OrderID
 INNER JOIN HH_Item on HH_Item.ItemNo = l.ItemID
