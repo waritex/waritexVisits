@@ -628,7 +628,7 @@ FROM AR_Order
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = AR_Order.CustomerNo
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
-WHERE AR_Order.BUID = 105
+WHERE AR_Order.BUID = 105 and AR_Order.SalesmanNo = ?
 GROUP BY
 CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
 , CONCAT(YEAR(AR_Order.date),'--',Month(AR_Order.date))
@@ -665,7 +665,7 @@ WHERE city is NOT NULL
 ORDER BY city
         ";
 
-        $custs = DB::connection('wri')->select($SQL , [$salesman]);
+        $custs = DB::connection('wri')->select($SQL , [$salesman , $salesman]);
         return empty($custs)? false : $custs;
     }
 
