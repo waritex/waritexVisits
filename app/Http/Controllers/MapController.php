@@ -616,56 +616,9 @@ ORDER BY t.DealNumber desc";
 
     private function getReportInfo($salesman)
     {
-        $SQL = "
-WITH 
-order_tbl AS (
-SELECT 
-CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
-, CONCAT(YEAR(AR_Order.date),'--',Month(AR_Order.date)) as date
-, SUM(NetTotal) as nettotal
-, COUNT(OrderID) as orderid
-FROM AR_Order
-INNER JOIN HH_Customer ON HH_Customer.CustomerNo = AR_Order.CustomerNo
-LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
-LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo
-WHERE AR_Order.BUID = 105 and AR_Order.SalesmanNo = ?
-GROUP BY
-CASE WHEN HH_Customer.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
-, CONCAT(YEAR(AR_Order.date),'--',Month(AR_Order.date))
-)
-, 
-city_tbl AS (
-SELECT CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
-, CASE WHEN MAX(v.starttime) IS NULL THEN 0 ELSE 1 END as LastVisit
-FROM
-V_JPlans
-INNER JOIN HH_Customer cus ON cus.CustomerNo = V_JPlans.CustomerID
-LEFT JOIN HH_Region on HH_Region.RegionNo = cus.RegionNo
-LEFT JOIN HH_City on HH_City.CITYNO = cus.CityNo and HH_City.RegionNo = cus.RegionNo
-LEFT JOIN V_HH_VisitDuration as v ON v.CUstomerNo = cus.CustomerNo and DATEDIFF(DAY,GETDATE(),v.starttime) = 0
-WHERE 1=1
-AND V_JPlans.AssignedTO = ?
-AND V_JPlans.fri = 0
-AND cus.inactive = 0
-GROUP BY 
-CASE WHEN cus.RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end
-)
------------------------------------------------------
-SELECT
-city_tbl.city as city
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),MAX(tbl.nettotal) ),0) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as maxtotal
-, ( SELECT MAX(tbl.orderid) FROM order_tbl tbl WHERE tbl.city = city_tbl.city ) as invoiceNo
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),SUM(o1.nettotal) ),0) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentSales
-, ( SELECT MAX(o1.orderid) FROM order_tbl o1 WHERE o1.city = city_tbl.city and o1.date = CONCAT(YEAR(GETDATE()),'--',Month(GETDATE())) ) as currentInv
-, ( SELECT SUM(o2.orderid) FROM order_tbl o2 WHERE o2.city = city_tbl.city and o2.nettotal = (SELECT MAX(nettotal) FROM order_tbl WHERE order_tbl.city = city_tbl.city) ) maxSalesInv
-, LastVisit
-FROM
-city_tbl
-WHERE city is NOT NULL
-ORDER BY city
-        ";
+        $SQL = " EXEC WR_MAP_Areas_Statistics ? ";
 
-        $custs = DB::connection('wri')->select($SQL , [$salesman , $salesman]);
+        $custs = DB::connection('wri')->select($SQL , [$salesman]);
         return empty($custs)? false : $custs;
     }
 
