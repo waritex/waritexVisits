@@ -287,7 +287,7 @@ order by Balance desc
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
-        // get customers's route:
+        // get areas report:
         if (!$Customers = $this->getReportInfo($salesman))
             return response()->json('No Customers In Today\'s Route',500);
         return $Customers;
@@ -604,7 +604,7 @@ ORDER BY t.DealNumber desc";
 
         $info = DB::connection('wri')->select($SQL , [$buid , $salesman ]);
 
-        return empty($info)? false : collect($info)->groupBy('CustomerID');
+        return empty($info)? [] : collect($info)->groupBy('CustomerID');
     }
 
     private function get_routes_customers_by_area($salesman){
