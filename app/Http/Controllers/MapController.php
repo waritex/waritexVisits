@@ -338,9 +338,9 @@ order by Balance desc
 
         $numWeeks = ceil($numDays/7+1);
 
-        $weekNum = $numWeeks % 4 ;
+        $weekNum = $numWeeks % $NumberOfWeeks ;
 
-        return $weekNum==0 ? 4 : $weekNum;
+        return $weekNum==0 ? $NumberOfWeeks : $weekNum;
     }
 
     /**
