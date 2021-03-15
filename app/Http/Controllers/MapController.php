@@ -52,8 +52,10 @@ order by Balance desc
         $salesman = $request->post('salesman',false);
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
+        $numberOfWeek=4;
+        try{$buid = MapUser::where('code', $salesman)->first()->buid; if ($buid==107) $numberOfWeek=2;}catch (\Exception $exception){}
         $today = now()->toDateString();
-        $weekNumber = $this->get_salesbuzz_week_number();
+        $weekNumber = $this->get_salesbuzz_week_number($numberOfWeek);
         $dayString = $this->get_today_name();
         // get customers's route:
         if (!$todayCustomers = $this->get_today_routes_from_salesbuzz($salesman , $weekNumber , $dayString))
@@ -320,7 +322,7 @@ order by Balance desc
      * @return int
      * get (number of days in the year) - (number of days in the first week of year if the year doesn't starts on Saturday)
      */
-    public function get_salesbuzz_week_number(){
+    public function get_salesbuzz_week_number($NumberOfWeeks = 4){
         /**
          * dayOfWeek+1          1 (for Sunday) through 7 (for Saturday)
          * dayOfYear            0 through 365 (for normal years)
