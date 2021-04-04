@@ -358,62 +358,8 @@ order by Balance desc
     // DataBase Functions
     ///////////////////////////////////////////////
     private function get_today_routes_from_salesbuzz($salesman , $weekNum , $day){
-        $routes = DB::connection('wri')->select("
-SELECT *
-, CASE WHEN t.LastInvoiceDate > 90 THEN 1 ELSE CASE WHEN t.LastInvoiceDate > 30 THEN 2 ELSE 0 END END as DealCut
-, CASE WHEN t.LastVisitDate > 28 THEN 1 ELSE 0 END as VisitCut
-, CASE WHEN t.LastVisitDate < 28 THEN 1 ELSE 0 END AS visited
-, ISNULL(CONVERT(DECIMAL(10,0),(t.TotalSales/t.InvNumber) ),0) as AVGSales
-, CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
-,
-CASE WHEN (t.LastVisitDate > 15 AND t.LastVisitDate <= 28) THEN '{\"fillColor\":\"green\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-	CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened = 1) THEN '{\"fillColor\":\"lawngreen\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-		CASE WHEN (t.LastVisitDate <= 15 AND t.distance < 100 AND t.opened is NULL) THEN '{\"fillColor\":\"orange\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE
-			CASE WHEN (t.LastVisitDate <= 15 AND t.distance > 100) THEN '{\"fillColor\":\"red\" , \"path\":\"M 0 -7 C -1 -7 -1 -7 -3 -7 A 10 10 0 1 1 3 -7 C 2 -7 1 -7 0 -7 z M -2 -6 a 2 2 0 1 1 4 0 a 2 2 0 1 1 -4 0\"}' ELSE NULL
-			END
-		END
-	END
-END as svg
-FROM
-(
-SELECT 
-V_JPlans.[AssignedTO]			as SalesmanCode
-,V_JPlans.[CustomerID]			as CustomerID
-,HH_Customer.[CustomerNameA]		as CustomerName
-,HH_Customer.[Latitude]			as Lat
-,HH_Customer.[Longitude]			as Lng
-, ( SELECT ISNULL(DATEDIFF(DAY,MAX(ord.Date),GETDATE()),999) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceDate
-, ( SELECT ISNULL(DATEDIFF(DAY,MAX(visit.starttime),GETDATE()),999) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID AND ( (visit.PositiveVisit=1) OR (visit.PositiveVisit=0 and visit.NCReasonID IS NOT NULL) ) ) as LastVisitDate
-, ( SELECT CONVERT(VARCHAR(10),MAX(ord.Date),111) FROM AR_Order as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as LastInvoiceD
-, ( SELECT CONVERT(VARCHAR(10),MAX(visit.starttime),111) FROM V_HH_VisitDuration as visit WHERE visit.CUstomerNo = V_JPlans.CustomerID AND ( (visit.PositiveVisit=1) OR (visit.PositiveVisit=0 and visit.NCReasonID IS NOT NULL) ) ) as LastVisitD
-, ( SELECT SUM(ord.Total) FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID ) as TotalSales
-, ( SELECT count(ord.OrderID) FROM (SELECT OrderID FROM WR_IRQ_ALL_SALES as ord WHERE ord.CustomerNo = V_JPlans.CustomerID group by ord.OrderID) as ord ) as InvNumber
-, ( SELECT CONVERT(VARCHAR(10),MAX(s.Date),111) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Stand
-, ( SELECT DATEDIFF(DAY,MAX(s.Date),GETDATE()) FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID and s.ItemID = 'IRQ034') as Standday
-, ( SELECT ISNULL(CONVERT(DECIMAL(10,0),(MAX(tsales.total)) ),0) FROM (SELECT SUM(s.Total) as total FROM WR_IRQ_ALL_SALES as s WHERE s.CustomerNo = V_JPlans.CustomerID group by s.OrderID) as tsales ) as MaxSales
-, HH_Customer.CityNo
-, HH_Customer.RegionNo
-, HH_Region.RegionNameA
-, HH_City.CityNameA
-, CASE WHEN wr.last_visit_lat is null or wr.last_visit_lon is NULL THEN NULL ELSE (geography::Point(ISNULL(wr.last_visit_lat,0), isnull(wr.last_visit_lon,0), 4326).STDistance( geography::Point(HH_Customer.Latitude, HH_Customer.Longitude, 4326) ) ) END distance
-, (
-	SELECT top 1 1 FROM WR_Map_Info_Events as ev 
-	WHERE ev.customerID = V_JPlans.CustomerID and ev.salesmanID = V_JPlans.[AssignedTO] 
-	and ( (DATEDIFF(MINUTE,ev.dateTime,last_visit_date)-180 between -5 and 30)  ) 
-) as opened
-
-FROM [dbo].[V_JPlans]
-INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
-LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
-LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
-LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.RegionNo = HH_Customer.RegionNo 
-LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DAY , wr.last_visit_date , GETDATE() ) < 28
-      WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
-      AND (HH_Customer.[Latitude] != 0 AND HH_Customer.[Latitude] IS NOT NULL) and HH_Customer.inactive = 0
-	  AND atr.AttrID is null
-) as t
-        " , [$salesman , $weekNum]);
-
+        $user = MapUser::where('code', $salesman)->first();
+        $routes = DB::connection('wri')->select(" EXEC WR_Map_Customers_BY_Areas ? , ? , ? , ? " , [$user->buid , $salesman , $weekNum , $day]);
         return empty($routes)? false : $routes;
     }
 
@@ -457,7 +403,7 @@ LEFT JOIN WR_Customers wr on wr.CustomerNo = V_JPlans.CustomerID and DATEDIFF(DA
 	  LEFT JOIN HH_District ON HH_Customer.districtno = HH_District.districtno
 	  LEFT JOIN HH_Region ON HH_Customer.regionno = HH_Region.regionno
 	  WHERE 
-	  V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
+	  V_JPlans.[AssignedTO] = ?  /* AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1 */
       AND (HH_Customer.[Latitude] = 0 OR HH_Customer.[Latitude] IS NULL)
         " , [$salesman , $weekNum]);
         return empty($customers)? false : $customers;
