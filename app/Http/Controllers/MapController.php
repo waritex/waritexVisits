@@ -405,7 +405,7 @@ order by Balance desc
 	  WHERE 
 	  V_JPlans.[AssignedTO] = ?  /* AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1 */
       AND (HH_Customer.[Latitude] = 0 OR HH_Customer.[Latitude] IS NULL)
-        " , [$salesman , $weekNum]);
+        " , [$salesman /*, $weekNum*/]);
         return empty($customers)? false : $customers;
     }
 
