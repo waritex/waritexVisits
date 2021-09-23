@@ -46,6 +46,11 @@ order by Balance desc
         return view('KSA' , compact('ksaData'));
     }
 
+    public function showMapWeb()
+    {
+        return view('CustomersMap');
+    }
+
     // Get today's Customers in Route for a Salesman
     public function get_customers(Request $request)
     {

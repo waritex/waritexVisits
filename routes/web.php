@@ -42,6 +42,7 @@ Route::get('/calcd' , 'KsaDistinaceController@distance');
 Route::get('/map','MapController@showWeb');
 Route::get('/Adminmap',function(){return view('AdminMap');});
 Route::get('/ksamap','MapController@showKSAWeb');
+Route::get('/webmap','MapController@showMapWeb');
 // API
 Route::post('/login', 'AuthController@auth');
 Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
