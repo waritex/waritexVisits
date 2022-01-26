@@ -563,8 +563,77 @@ ORDER BY t.DealNumber desc";
     private function get_routes_customers_by_area($salesman){
         $SQL = " EXEC WR_Map_Customers_BY_Areas ? , ? ";
         $user = MapUser::where('code', $salesman)->first();
-        $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman]);
+        if ($salesman == 'IRQ018'){
+            $custs = $this->Ibrahim($user,$salesman);
+        }
+        else{
+            $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman]);
+        }
         return empty($custs)? false : $custs;
+    }
+
+    private function Ibrahim($user , $salesman){
+        $SQL = " 
+         SELECT *
+, 1 as DealCut
+, 1 as VisitCut
+, 0 AS visited
+, 0 as AVGSales	
+, CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
+, '{\"fillColor\":\"red\" , \"path\":'+t.svgpath+'}' svg   
+FROM
+(
+SELECT 
+V_JPlans.AssignedTO			as SalesmanCode
+,V_JPlans.CustomerID			as CustomerID
+,HH_Customer.CustomerNameA		as CustomerName
+,HH_Customer.Latitude			as Lat
+,HH_Customer.Longitude			as Lng
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_District.DistrictNameA
+, HH_City.CityNameA
+, HH_Area.AreaNameA
+, WR_Area_Polygon.polypoints
+, 999 as LastInvoiceDate
+, 999 as LastVisitDate
+, NULL as LastInvoiceD
+, NULL as LastVisitD
+, atr.AttrID
+, 1 as primo
+, 1 as zindex
+, '\"M 0 0 C -2 -20 -10 -22 -10 -30 A 10 10 0 1 1 10 -30 C 10 -22 2 -20 0 0\"' as svgpath
+, 200 distance
+, NULL opened
+, 1 as TotalSales
+, 1 as InvNumber
+, null as Stand
+, null as Standday
+, 1 as MaxSales
+, 1 jallyqty
+, 1 jallyinv					 
+FROM V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_District.DistrictNo = HH_Customer.DistrictNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
+LEFT JOIN WR_Area_Polygon on WR_Area_Polygon.buid = HH_Customer.buid and WR_Area_Polygon.Code = HH_Customer.CityNo
+
+WHERE 1=1
+AND V_JPlans.AssignedTO in ('IRQ004','IRQ007','IRQ011','IRQ017') 
+AND V_JPlans.fri = 0   
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
+AND HH_Customer.inactive = 0
+AND (RegionNameA IS NOT NULL AND CityNameA IS NOT NULL AND AreaNameA IS NOT NULL)
+AND atr.AttrID is null
+and HH_Customer.RegionNo = 'BGH'
+) as t 
+ORDER BY RegionNo , CityNameA
+         ";
+        return DB::connection('wri')->select($SQL , [$user->buid,$salesman]);
     }
 
     private function getReportInfo($salesman)
