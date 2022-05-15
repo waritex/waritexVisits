@@ -33,23 +33,32 @@ class ScannerController extends Controller
     public function catch_readings(Request $request)
     {
         $readings = $request->post('readings',false);
-        if ($readings === false || count($readings=json_decode($readings,true))==0)
+        if ($readings === false || count($readings)==0)
             return response()->json('No readings',200);
-        $last_read = ScannerGPS::where('times','=',ScannerGPS::max('times'))->first();
+//        $last_read = ScannerGPS::where('times','=',ScannerGPS::max('times'))->first();
         $readings = collect($readings)->map(function ($a){
-            $a['times'] = Carbon::createFromTimestampMs($a['times'])->toDateTimeString();
+            $a['times'] = Carbon::createFromTimestampMs($a['datetime'])->toDateTimeString();
             return $a;
         });
-        ScannerGPS::insert($readings->toArray());
+
+        foreach ($readings as $reading){
+            ScannerGPS::create([
+                'times'  => $reading['times'],
+                'salesman'  => $reading['salesman'],
+                'lat'  => $reading['lat'],
+                'lng'  => $reading['lng'],
+            ]);
+        }
+
         return response()->json('done',200);
         /*************************************/
         /*************************************/
         /*************************************/
-        $roads = $this->google_road_api($readings,$last_read);
-        if ($roads===false){
-            return response()->json('Google Error',401);
-        }
-        $this->save_road($roads);
+//        $roads = $this->google_road_api($readings,$last_read);
+//        if ($roads===false){
+//            return response()->json('Google Error',401);
+//        }
+//        $this->save_road($roads);
     }
 
     private function get_not_visited_3months($city){
@@ -115,7 +124,7 @@ WHERE
 
     public function ask_here(){
         $next_day = today()->addDay();
-        $todayReadings = ScannerGPS::where('times','>=',today()->subDay()->toDateString())->where('times','<',$next_day->toDateString())->get();
+        $todayReadings = ScannerGPS::where('times','>=',today()->subDays(2)->toDateString())->where('times','<',$next_day->toDateString())->get();
         if (empty($todayReadings) || $todayReadings->isEmpty())
             $asd = '';
         else {
@@ -139,7 +148,23 @@ WHERE
 //        return json_decode((string) $response->getBody(), true);
             $asd = $response->getBody();
         }
-        return view('here',compact('asd'));
+        $xx = $todayReadings[0];
+        return view('here',compact('asd','xx'));
+    }
+
+    public function askg_v2($salesman = 'IRQ004' , $from=null , $to=null)
+    {
+        if (empty($from))
+            $from = today();//->subDays(2);
+        if (empty($to))
+            $to = today()->addDay();
+        $todayReadings = ScannerGPS::where('salesman',$salesman)
+            ->where('times','>=',$from->toDateString())
+            ->where('times','<',$to->toDateString())
+            ->orderBy('times','ASC')
+            ->get();
+        $todayReadings = collect($todayReadings);
+        return view('googleScanner',compact('todayReadings'));
     }
 
 

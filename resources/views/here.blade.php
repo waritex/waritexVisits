@@ -75,10 +75,14 @@
     var defaultLayers = platform.createDefaultLayers();
 
     //Step 2: initialize a map - this map is centered over Berlin
+    var startp = {!! $xx !!};
+    var centerr = {lat:52.5160, lng:13.3779}
+    if (startp.lat && startp.lng)
+    {centerr.lat = startp.lat; centerr.lng = startp.lng}
     var map = new H.Map(mapContainer,
         defaultLayers.normal.map,{
-            center: {lat:52.5160, lng:13.3779},
-            zoom: 13
+            center: centerr,
+            zoom: 16
         });
 
     //Step 3: make the map interactive
@@ -256,7 +260,7 @@
 
             polyline = new H.map.Polyline(strip, {
                 style: {
-                    lineWidth: 4,
+                    lineWidth: 6,
                     strokeColor: 'rgba(0, 128, 255, 0.7)'
                 }
             });

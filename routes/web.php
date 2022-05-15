@@ -69,6 +69,7 @@ Route::get('/test' , 'MapController@get_customer_items_info');
 Route::get('/test1' , 'MapController@get_today_name');
 Route::get('/test12' , 'MapController@get_salesbuzz_week_number');
 Route::get('/tt' , 'ScannerController@ask_here');
+Route::get('/gtt/{salesman?}/{from?}/{to?}' , 'ScannerController@askg_v2');
 
 Route::get('/date' , 'MapController@get_today_name');
 Route::get('/schedule' , 'MapController@get_schedule');
