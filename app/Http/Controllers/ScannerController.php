@@ -156,8 +156,10 @@ WHERE
     {
         if (empty($from))
             $from = today();//->subDays(2);
+        else $from = Carbon::parse($from);
         if (empty($to))
             $to = today()->addDay();
+        else $to = Carbon::parse($to);
         $todayReadings = ScannerGPS::where('salesman',$salesman)
             ->where('times','>=',$from->toDateString())
             ->where('times','<',$to->toDateString())
