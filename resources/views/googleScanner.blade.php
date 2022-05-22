@@ -6,24 +6,33 @@
     <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
-
     {{--<link rel="manifest" href="manifest.json">--}}
     <meta name="theme-color" content="#4e8ef7">
-
     <!-- add to homescreen for ios -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         html, body, #map {
             height: 100%;
             margin: 0px;
             padding: 0px
         }
+        #floating-panel {
+            position: absolute;
+            top: 10px;
+            left: 1%;
+            z-index: 5;
+            background-color: #fff;
+            text-align: center;
+        }
     </style>
 
     <script src="https://www.gstatic.com/external_hosted/jquery2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAyHOguHswKUpy_jhC4EGrhe527y-xU7l0&libraries=drawing,places,geometry" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         var apiKey = 'AIzaSyAyHOguHswKUpy_jhC4EGrhe527y-xU7l0';
 
@@ -175,7 +184,7 @@
                 path: snappedCoordinates,
                 strokeColor: strokColors[0],
                 strokeWeight: 4,
-                // strokeOpacity: 0.9,
+                strokeOpacity: 0.9,
                 icons: [
                     {
                         icon: lineSymbol_s,
@@ -207,6 +216,8 @@
 
         function autoViewLast(){
             var bounds = new google.maps.LatLngBounds();
+            bounds.extend(snappedCoordinates[snappedCoordinates.length-3]);
+            bounds.extend(snappedCoordinates[snappedCoordinates.length-2]);
             bounds.extend(snappedCoordinates[snappedCoordinates.length-1]);
             this.map.fitBounds(bounds);       // auto-zoom
             this.map.panToBounds(bounds);     // auto-center
@@ -231,7 +242,6 @@
                 });
             }
         }
-
         function marker(){
             for(let i=0 ; i<gps.length ; i++){
                 let positiono = new google.maps.LatLng(Number(gps[i].lat), Number(gps[i].lng));
@@ -289,6 +299,14 @@
 </head>
 
 <body>
+{{--<div id="floating-panel" dir="rtl">--}}
+    {{--<button title="اليوم السابق" class="btn btn-sm btn-primary">--}}
+        {{---1--}}
+    {{--</button>--}}
+    {{--<button title="اليوم قبل السابق" class="btn btn-sm btn-warning">--}}
+        {{---2--}}
+    {{--</button>--}}
+{{--</div>--}}
 <div id="map"></div>
 </body>
 </html>
