@@ -38,13 +38,15 @@
 
         var map;
         var placeIdArray = [];
-        var polylines = [];
+        var polyline;
         var requests = [];
         var snappedCoordinates = [];
         var gps = {!! $todayReadings !!};
         var strokColors = ['#0c4fe6' , '#E61315' , '#E2E626'];
         var areaPolygon = {!! $polygon !!};
         var polygon;
+        var requested = 0;
+        var icons =[];
 
         function showMap() {
             var mapOptions = {
@@ -111,18 +113,38 @@
                 s.push(prepareRequestPoints(requests[i]))
             }
             if( s[0].length > 0 )
-                handleRequests(s)
+                handleRequests(s).then((ddd)=>{
+                    console.log('done all requests: ',ddd)
+                    snappedCoordinates = [].concat.apply([], snappedCoordinates);
+                    drawSnappedPolyline()
+                })
         }
 
         function handleRequests(s){
-            for (var i = 0; i < s.length; i++) {
-                runSnapToRoad(s[i],i).then((res)=>{
-                    console.log(res)
-                    processSnapToRoadResponse(res.data);
-                    // markerSnappedCoordinates()
-                    drawSnappedPolyline(res.config.i);
-                })
-            }
+            requested = s.length;
+            let p = new Promise((resolve, reject) => {
+                for (var i = 0; i < s.length; i++) {
+                    runSnapToRoad(s[i],i)
+                        .then((res)=>{
+                            console.log(res)
+                            console.log(requested)
+                            processSnapToRoadResponse(res.data,res.config.i);
+                            requested = requested - 1;
+                        // markerSnappedCoordinates()
+                        // drawSnappedPolyline(res.config.i);
+                        })
+                        .catch((e)=>{
+                            console.log(e)
+                            alert('Error Try Again...')
+                            requested = requested - 1;
+                        })
+                        .then(()=>{
+                            if(requested==0)
+                                resolve(true)
+                        })
+                }
+            });
+            return p
         }
 
         // Snap a user-created polyline to roads and draw the snapped path
@@ -145,40 +167,57 @@
         }
 
         // Store snapped polyline returned by the snap-to-road service.
-        function processSnapToRoadResponse(data) {
-            snappedCoordinates = [];
-            placeIdArray = [];
+        function processSnapToRoadResponse(data , x) {
+            let subSnapped = []
             for (var i = 0; i < data.snappedPoints.length; i++) {
                 var latlng = new google.maps.LatLng(
                     data.snappedPoints[i].location.latitude,
                     data.snappedPoints[i].location.longitude);
-                snappedCoordinates.push(latlng);
+                subSnapped.push(latlng);
                 placeIdArray.push(data.snappedPoints[i].placeId);
             }
+            snappedCoordinates[x] = subSnapped
         }
 
-
+        function scale (number, inMin, inMax, outMin, outMax) {
+            return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+        }
         function animateCircle(line) {
-            let count = 0;
-
+            var len = google.maps.geometry.spherical.computeLength(polyline.getPath().getArray())
+            console.log(Math.ceil(len))
+            let countx = []
+            for(let i=0 ; i<10 ; i++){
+                countx[i] = i*850;
+            }
             window.setInterval(() => {
-                count = (count + 1) % 200;
-
                 const icons = line.get("icons");
-
-                icons[0].offset = count / 2 + "%";
+                for(let i=0 ; i<10 ; i++){
+                    countx[i] = (countx[i] + 1) % 8500;
+                    icons[i].offset = countx[i] / 85 + "%";
+                }
                 line.set("icons", icons);
-            }, 200);
+            }, 10);
         }
 
         // Draws the snapped polyline (after processing snap-to-road response).
         function drawSnappedPolyline(i) {
             const lineSymbol_s = {
-                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                strokeColor: "#393",
+                // path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                path: 'M 0 0 H 2 M 0 0.01 H 2 M 0 -0.01 H 2' ,
+                strokeColor: "#faf1ff",
+                rotation: 90,
             };
-            const lineSymbol_g = {
-                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            var car = "M17.402,0H5.643C2.526,0,0,3.467,0,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644 V6.584C23.044,3.467,20.518,0,17.402,0z M22.057,14.188v11.665l-2.729,0.351v-4.806L22.057,14.188z M20.625,10.773 c-1.016,3.9-2.219,8.51-2.219,8.51H4.638l-2.222-8.51C2.417,10.773,11.3,7.755,20.625,10.773z M3.748,21.713v4.492l-2.73-0.349 V14.502L3.748,21.713z M1.018,37.938V27.579l2.73,0.343v8.196L1.018,37.938z M2.575,40.882l2.218-3.336h13.771l2.219,3.336H2.575z M19.328,35.805v-7.872l2.729-0.355v10.048L19.328,35.805z";
+            var icon = {
+                path: car,
+                scale: .7,
+                strokeColor: 'white',
+                strokeWeight: .10,
+                fillOpacity: 1,
+                fillColor: '#000000',
+                offset: '5%',
+                rotation: 0,
+                anchor: new google.maps.Point(10, 25) // orig 10,50 back of car, 10,0 front of car, 10,25 center of car
             };
             var snappedPolyline = new google.maps.Polyline({
                 path: snappedCoordinates,
@@ -188,17 +227,52 @@
                 icons: [
                     {
                         icon: lineSymbol_s,
-                        offset: "100%",
+                        offset: "0%",
                     },
                     {
-                        icon: lineSymbol_g,
+                        icon: lineSymbol_s,
+                        offset: "10%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "20%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "30%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "40%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "50%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "60%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "70%",
+                    },{
+                        icon: lineSymbol_s,
+                        offset: "80%",
+                    },
+                    {
+                        icon: lineSymbol_s,
+                        offset: "90%",
+                    },
+                    {
+                        icon: icon,
                         offset: "100%",
                     },
                 ],
             });
 
             snappedPolyline.setMap(map);
-            polylines.push(snappedPolyline);
+            polyline = snappedPolyline;
             // autoViewAll();
             autoViewLast();
             animateCircle(snappedPolyline)
@@ -216,11 +290,10 @@
 
         function autoViewLast(){
             var bounds = new google.maps.LatLngBounds();
-            bounds.extend(snappedCoordinates[snappedCoordinates.length-3]);
-            bounds.extend(snappedCoordinates[snappedCoordinates.length-2]);
             bounds.extend(snappedCoordinates[snappedCoordinates.length-1]);
             this.map.fitBounds(bounds);       // auto-zoom
             this.map.panToBounds(bounds);     // auto-center
+            this.map.setZoom(17);
         }
 
         function markerSnappedCoordinates(){
@@ -286,7 +359,7 @@
                 strokeOpacity: 0.8,
                 strokeWeight: 2,
                 fillColor: "#FF0000",
-                fillOpacity: 0.15,
+                fillOpacity: 0,
             });
             try{this.polygon.setMap(null)}
             catch (e) {console.log(e)}
