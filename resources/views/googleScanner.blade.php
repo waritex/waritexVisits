@@ -23,7 +23,7 @@
 
     <script src="https://www.gstatic.com/external_hosted/jquery2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAyHOguHswKUpy_jhC4EGrhe527y-xU7l0&libraries=drawing,places" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAyHOguHswKUpy_jhC4EGrhe527y-xU7l0&libraries=drawing,places,geometry" async defer></script>
     <script type="text/javascript">
         var apiKey = 'AIzaSyAyHOguHswKUpy_jhC4EGrhe527y-xU7l0';
 
@@ -33,7 +33,9 @@
         var requests = [];
         var snappedCoordinates = [];
         var gps = {!! $todayReadings !!};
-        var strokColors = ['#add8e6' , '#E61315' , '#E2E626'];
+        var strokColors = ['#0c4fe6' , '#E61315' , '#E2E626'];
+        var areaPolygon = {!! $polygon !!};
+        var polygon;
 
         function showMap() {
             var mapOptions = {
@@ -55,7 +57,7 @@
                 for (let i = 0; i < gps.length; i += chunkSize) {
                     if(i==0) // first chunk (all 100 points)
                         res.push(gps.slice(i, i + chunkSize));
-                    else if(i+chunkSize >= gps.length) // last chunk (all points)
+                    else if(i-2+chunkSize >= gps.length) // last chunk (all points)
                         res.push(gps.slice(i-2, i + chunkSize));
                     else // other chunks (98-->198 etc...)
                         res.push(gps.slice(i-2, i-2 + chunkSize));
@@ -75,8 +77,25 @@
             return pathValues;
         }
 
+        function filterPointsInPolygon(){
+            filteredGps = [];
+            if(areaPolygon.length > 0 && gps.length > 0){
+                for (let i = 0; i < gps.length; i++) {
+                    let positiono = new google.maps.LatLng(Number(gps[i].lat), Number(gps[i].lng));
+                    let inside = google.maps.geometry.poly.containsLocation(positiono, polygon)
+                    if(inside)
+                        filteredGps.push(gps[i])
+                }
+            }
+            else if(gps.length>0)
+                filteredGps = gps;
+            return filteredGps;
+        }
+
         function initialize() {
             showMap();
+            showPolygon(areaPolygon);
+            gps = filterPointsInPolygon();
             var s = []
             chunkGPSPoints();
             for (var i=0 ; i < requests.length ; i++) {
@@ -129,26 +148,66 @@
             }
         }
 
+
+        function animateCircle(line) {
+            let count = 0;
+
+            window.setInterval(() => {
+                count = (count + 1) % 200;
+
+                const icons = line.get("icons");
+
+                icons[0].offset = count / 2 + "%";
+                line.set("icons", icons);
+            }, 200);
+        }
+
         // Draws the snapped polyline (after processing snap-to-road response).
         function drawSnappedPolyline(i) {
+            const lineSymbol_s = {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                strokeColor: "#393",
+            };
+            const lineSymbol_g = {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            };
             var snappedPolyline = new google.maps.Polyline({
                 path: snappedCoordinates,
-                strokeColor: strokColors[i],
+                strokeColor: strokColors[0],
                 strokeWeight: 4,
-                strokeOpacity: 0.9,
+                // strokeOpacity: 0.9,
+                icons: [
+                    {
+                        icon: lineSymbol_s,
+                        offset: "100%",
+                    },
+                    {
+                        icon: lineSymbol_g,
+                        offset: "100%",
+                    },
+                ],
             });
 
             snappedPolyline.setMap(map);
             polylines.push(snappedPolyline);
-            autoViewAll();
+            // autoViewAll();
+            autoViewLast();
+            animateCircle(snappedPolyline)
         }
 
-        // Auto Zoom & Focus on Markers
+        // Auto Zoom & Focus on All points
         function autoViewAll(){
             var bounds = new google.maps.LatLngBounds();
             for (var i = 0; i < snappedCoordinates.length; i++) {
                 bounds.extend(snappedCoordinates[i]);
             }
+            this.map.fitBounds(bounds);       // auto-zoom
+            this.map.panToBounds(bounds);     // auto-center
+        }
+
+        function autoViewLast(){
+            var bounds = new google.maps.LatLngBounds();
+            bounds.extend(snappedCoordinates[snappedCoordinates.length-1]);
             this.map.fitBounds(bounds);       // auto-zoom
             this.map.panToBounds(bounds);     // auto-center
         }
@@ -205,6 +264,24 @@
                 flag.activeInfoWindow = infowindow;
                 flag.activeInfoWindowMarker = marker
             });
+        }
+
+        function showPolygon(poly) {
+            const polygon = poly;
+            if (!polygon || polygon==null || polygon=='null' || polygon==undefined || polygon.length==0)
+                return false;
+            const p = new google.maps.Polygon({
+                paths: polygon,
+                strokeColor: "#FF0000",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#FF0000",
+                fillOpacity: 0.15,
+            });
+            try{this.polygon.setMap(null)}
+            catch (e) {console.log(e)}
+            p.setMap(this.map);
+            this.polygon = p;
         }
 
         $(window).load(initialize);

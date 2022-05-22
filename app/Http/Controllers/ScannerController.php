@@ -152,21 +152,32 @@ WHERE
         return view('here',compact('asd','xx'));
     }
 
-    public function askg_v2($salesman = 'IRQ004' , $from=null , $to=null)
+    public function askg_v2($salesman = 'IRQ004' , Request $request)
     {
-        if (empty($from))
+        $from = $request->get('from');
+        $to = $request->get('to');
+        $area = $request->get('area');
+        if (empty($from) || $from=='null')
             $from = today();//->subDays(2);
         else $from = Carbon::parse($from);
-        if (empty($to))
+        if (empty($to) || $to=='null')
             $to = today()->addDay();
         else $to = Carbon::parse($to);
+
+        $polygon = collect([]);
+        if (!empty($area) && $area != 'null'){
+            $p = collect(DB::connection('wri')->select(" SELECT * FROM WR_Area_Polygon WHERE Code = ? " , [$area]));
+            if (!empty($p)){
+                $polygon = $p[0]->polypoints;
+            }
+        }
         $todayReadings = ScannerGPS::where('salesman',$salesman)
             ->where('times','>=',$from->toDateString())
             ->where('times','<',$to->toDateString())
             ->orderBy('times','ASC')
             ->get();
         $todayReadings = collect($todayReadings);
-        return view('googleScanner',compact('todayReadings'));
+        return view('googleScanner',compact('todayReadings','polygon'));
     }
 
 
