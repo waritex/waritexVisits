@@ -43,7 +43,7 @@ class ScannerController extends Controller
 
         foreach ($readings as $reading){
             ScannerGPS::create([
-                'times'  => $reading['times'],
+                'datetime'  => $reading['times'],
                 'salesman'  => $reading['salesman'],
                 'lat'  => $reading['lat'],
                 'lng'  => $reading['lng'],
@@ -180,6 +180,50 @@ WHERE
         return view('googleScanner',compact('todayReadings','polygon'));
     }
 
+    public function fetchAllReadings(Request $request)
+    {
+        if ($request->method()==='GET'){
+            $salesman = $request->get('salesman');
+            $from = $request->get('from');
+            $area = $request->get('area');
+        }
+        else{
+            $salesman = $request->post('salesman');
+            $from = $request->post('from');
+            $area = $request->post('area');
+        }
+
+        if (empty($from) || $from=='null')
+            $from = today()->subWeek();//->subDays(2);
+        else $from = Carbon::parse($from);
+        $Readings = ScannerGPS::where('salesman',$salesman)
+            ->where('datetime','>=',$from->toDateString())
+            ->orderBy('datetime','ASC')
+            ->get();
+        $polygon = collect([]);
+        $res = [];$res['today']=[];$res['past']=[];
+        if (!empty($area) && $area != 'null'){
+            $p = collect(DB::connection('wri')->select(" SELECT * FROM WR_Area_Polygon WHERE Code = ? " , [$area]));
+            if (!empty($p)){
+                $polygon = $p[0]->polypoints;
+                $polygon = json_decode($polygon);
+            }
+        }
+        else return collect($res);
+        foreach ($Readings as $reading){
+            $point = $reading['lat'].','.$reading['lng'];
+            if ($this->pointInPolygon($point,$polygon)!='outside'){
+                $t = Carbon::parse($reading['datetime']);
+                if( $t->isToday() ){
+                    $res['today'][] = $reading;
+                }
+                else
+                    $res['past'][] = $reading;
+            }
+        }
+        return collect($res);
+    }
+
 
 
     ///////////////////////////////////////////////
@@ -232,4 +276,68 @@ WHERE
 
         return empty($routes)? false : $routes;
     }
+
+
+    function pointInPolygon($point, $polygon, $pointOnVertex = true) {
+        $this->pointOnVertex = $pointOnVertex;
+
+        // Transform string coordinates into arrays with x and y values
+        $point = $this->pointStringToCoordinates($point);
+        $vertices = array();
+        foreach ($polygon as $vertex) {
+            $vertices[] = $this->polygonToCoordinates($vertex);
+        }
+
+        // Check if the point sits exactly on a vertex
+        if ($this->pointOnVertex == true and $this->pointOnVertex($point, $vertices) == true) {
+            return "vertex";
+        }
+
+        // Check if the point is inside the polygon or on the boundary
+        $intersections = 0;
+        $vertices_count = count($vertices);
+
+        for ($i=1; $i < $vertices_count; $i++) {
+            $vertex1 = $vertices[$i-1];
+            $vertex2 = $vertices[$i];
+            if ($vertex1['y'] == $vertex2['y'] and $vertex1['y'] == $point['y'] and $point['x'] > min($vertex1['x'], $vertex2['x']) and $point['x'] < max($vertex1['x'], $vertex2['x'])) { // Check if point is on an horizontal polygon boundary
+                return "boundary";
+            }
+            if ($point['y'] > min($vertex1['y'], $vertex2['y']) and $point['y'] <= max($vertex1['y'], $vertex2['y']) and $point['x'] <= max($vertex1['x'], $vertex2['x']) and $vertex1['y'] != $vertex2['y']) {
+                $xinters = ($point['y'] - $vertex1['y']) * ($vertex2['x'] - $vertex1['x']) / ($vertex2['y'] - $vertex1['y']) + $vertex1['x'];
+                if ($xinters == $point['x']) { // Check if point is on the polygon boundary (other than horizontal)
+                    return "boundary";
+                }
+                if ($vertex1['x'] == $vertex2['x'] || $point['x'] <= $xinters) {
+                    $intersections++;
+                }
+            }
+        }
+        // If the number of edges we passed through is odd, then it's in the polygon.
+        if ($intersections % 2 != 0) {
+            return "inside";
+        } else {
+            return "outside";
+        }
+    }
+
+    function pointOnVertex($point, $vertices) {
+        foreach($vertices as $vertex) {
+            if ($point == $vertex) {
+                return true;
+            }
+        }
+
+    }
+
+    function pointStringToCoordinates($pointString) {
+        $coordinates = explode(",", $pointString);
+        return array("x" => $coordinates[0], "y" => $coordinates[1]);
+    }
+    function polygonToCoordinates($pointString) {
+        return array("x" => $pointString->lat, "y" => $pointString->lng);
+    }
+
+
+
 }

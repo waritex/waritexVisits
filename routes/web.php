@@ -57,6 +57,8 @@ Route::post('/get_car_location','MapController@get_car_location');
 // Scanner API
 Route::get('/get_scanner','ScannerController@get_customers');
 Route::post('/readings','ScannerController@catch_readings');
+Route::get('/get_gpsreadings','ScannerController@fetchAllReadings');
+Route::post('/get_gpsreadings','ScannerController@fetchAllReadings');
 //Test Routes:
 
 ////////////////////////////////////////////////////////////////////

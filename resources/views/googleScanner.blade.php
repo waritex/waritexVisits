@@ -46,7 +46,6 @@
         var areaPolygon = {!! $polygon !!};
         var polygon;
         var requested = 0;
-        var icons =[];
 
         function showMap() {
             var mapOptions = {
@@ -127,7 +126,6 @@
                     runSnapToRoad(s[i],i)
                         .then((res)=>{
                             console.log(res)
-                            console.log(requested)
                             processSnapToRoadResponse(res.data,res.config.i);
                             requested = requested - 1;
                         // markerSnappedCoordinates()
@@ -182,32 +180,34 @@
         function scale (number, inMin, inMax, outMin, outMax) {
             return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
         }
+        var interv;
         function animateCircle(line) {
-            var len = google.maps.geometry.spherical.computeLength(polyline.getPath().getArray())
-            console.log(Math.ceil(len))
-            let countx = []
-            for(let i=0 ; i<10 ; i++){
-                countx[i] = i*850;
-            }
-            window.setInterval(() => {
-                const icons = line.get("icons");
-                for(let i=0 ; i<10 ; i++){
-                    countx[i] = (countx[i] + 1) % 8500;
-                    icons[i].offset = countx[i] / 85 + "%";
-                }
-                line.set("icons", icons);
-            }, 10);
-        }
-
-        // Draws the snapped polyline (after processing snap-to-road response).
-        function drawSnappedPolyline(i) {
             const lineSymbol_s = {
-                // path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                 path: 'M 0 0 H 2 M 0 0.01 H 2 M 0 -0.01 H 2' ,
                 strokeColor: "#faf1ff",
                 strokeOpacity: 0.7,
                 rotation: 90,
             };
+            const icons = line.get("icons");
+            let z = map.getZoom();
+            console.log("Zoom: ",map.getZoom())
+            let points = scale(z,8,22,10,350)+'px' ;
+            let offsets = {10:500 , 11:1000 , 12:2000 , 13:4000 , 14:6000 , 15:8000 , 16:10000 , 17:20000 , 18:40000 , 19:80000 , 20:130000 , 21:150000 , 22:190000}
+            let offsetMove = offsets[z] ;
+            let speed = 20 ;
+            console.log('points: ',points , 'oofsetMove: ',offsetMove , 'speed' ,speed )
+            icons.push({icon: lineSymbol_s, offset: "0%", repeat: points})
+            var d = 0
+            interv = window.setInterval(() => {
+                d = (d + 1) % (offsetMove);
+                icons[1].offset = 100 * (d / offsetMove) + "%";
+                line.set("icons", icons);
+            }, speed );
+
+        }
+
+        // Draws the snapped polyline (after processing snap-to-road response).
+        function drawSnappedPolyline(i) {
             var car = "M17.402,0H5.643C2.526,0,0,3.467,0,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644 V6.584C23.044,3.467,20.518,0,17.402,0z M22.057,14.188v11.665l-2.729,0.351v-4.806L22.057,14.188z M20.625,10.773 c-1.016,3.9-2.219,8.51-2.219,8.51H4.638l-2.222-8.51C2.417,10.773,11.3,7.755,20.625,10.773z M3.748,21.713v4.492l-2.73-0.349 V14.502L3.748,21.713z M1.018,37.938V27.579l2.73,0.343v8.196L1.018,37.938z M2.575,40.882l2.218-3.336h13.771l2.219,3.336H2.575z M19.328,35.805v-7.872l2.729-0.355v10.048L19.328,35.805z";
             var icon = {
                 path: car,
@@ -227,45 +227,6 @@
                 strokeOpacity: 0.9,
                 icons: [
                     {
-                        icon: lineSymbol_s,
-                        offset: "0%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "10%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "20%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "30%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "40%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "50%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "60%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "70%",
-                    },{
-                        icon: lineSymbol_s,
-                        offset: "80%",
-                    },
-                    {
-                        icon: lineSymbol_s,
-                        offset: "90%",
-                    },
-                    {
                         icon: icon,
                         offset: "100%",
                     },
@@ -277,6 +238,11 @@
             // autoViewAll();
             autoViewLast();
             animateCircle(snappedPolyline)
+            map.addListener("zoom_changed", () => {
+                clearInterval(interv);
+                polyline.set("icons", polyline.get("icons").slice(0,1))
+                animateCircle(snappedPolyline)
+            });
         }
 
         // Auto Zoom & Focus on All points
