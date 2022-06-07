@@ -224,6 +224,36 @@ WHERE
         return collect($res);
     }
 
+    public function fetchAllReadingsAdmin(Request $request)
+    {
+        $salesman = $request->post('salesman');
+        $area = $request->post('area');
+        $datetime = $request->post('datetime');
+
+        $datetime = Carbon::createFromTimestampMs($datetime);
+        $Readings = ScannerGPS::where('salesman',$salesman)
+            ->where('datetime','>=',$datetime)
+            ->orderBy('datetime','ASC')
+            ->get();
+        $polygon = collect([]);
+        $res = [];
+        if (!empty($area) && $area != 'null'){
+            $p = collect(DB::connection('wri')->select(" SELECT * FROM WR_Area_Polygon WHERE Code = ? " , [$area]));
+            if (!empty($p)){
+                $polygon = $p[0]->polypoints;
+                $polygon = json_decode($polygon);
+            }
+        }
+        else return collect($res);
+        foreach ($Readings as $reading){
+            $point = $reading['lat'].','.$reading['lng'];
+            if ($this->pointInPolygon($point,$polygon)!='outside'){
+                $res[] = $reading;
+            }
+        }
+        return collect($res);
+    }
+
 
 
     ///////////////////////////////////////////////
