@@ -59,6 +59,7 @@ Route::get('/get_scanner','ScannerController@get_customers');
 Route::post('/readings','ScannerController@catch_readings');
 Route::get('/get_gpsreadings','ScannerController@fetchAllReadings');
 Route::post('/get_gpsreadings','ScannerController@fetchAllReadings');
+Route::get('/get_gpsreadings_admin','ScannerController@fetchAllReadingsAdmin');
 Route::post('/get_gpsreadings_admin','ScannerController@fetchAllReadingsAdmin');
 //Test Routes:
 

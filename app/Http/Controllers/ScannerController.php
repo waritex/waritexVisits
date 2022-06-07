@@ -231,10 +231,13 @@ WHERE
         $datetime = $request->post('datetime');
 
         $datetime = Carbon::createFromTimestampMs($datetime);
+
+
         $Readings = ScannerGPS::where('salesman',$salesman)
             ->where('datetime','>=',$datetime)
             ->orderBy('datetime','ASC')
             ->get();
+
         $polygon = collect([]);
         $res = [];
         if (!empty($area) && $area != 'null'){
