@@ -194,10 +194,12 @@ WHERE
         }
 
         if (empty($from) || $from=='null')
-            $from = today()->subWeek();//->subDays(2);
+            $from = today()->subWeeks(3);//->subDays(2);
         else $from = Carbon::parse($from);
         $Readings = ScannerGPS::where('salesman',$salesman)
             ->where('datetime','>=',$from->toDateString())
+//            ->where('datetime','>=','2022-06-07')
+//            ->where('datetime','<','2022-06-08')
             ->orderBy('datetime','ASC')
             ->get();
         $polygon = collect([]);
@@ -231,6 +233,7 @@ WHERE
         $datetime = $request->post('datetime');
 
         $datetime = Carbon::createFromTimestampMs($datetime);
+//        $datetime = today()->subDay(1);
         $Readings = ScannerGPS::where('salesman',$salesman)
             ->where('datetime','>=',$datetime)
             ->orderBy('datetime','ASC')
