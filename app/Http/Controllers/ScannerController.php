@@ -257,6 +257,96 @@ WHERE
         return collect($res);
     }
 
+    public function AmeenMap(Request $request)
+    {
+        $area = $request->post('area');
+        $salesman = $request->post('salesman');
+
+        $SQL1 = "
+        select 
+v.CUstomerNo
+, c.CustomerNameA
+, reg.RegionNameA
+, dis.DistrictNameA
+, cit.CityNameA
+, c.RegionNo
+, c.DistrictNo
+, c.CityNo
+, c.Latitude
+, c.Longitude
+from V_HH_VisitDuration v
+LEFT JOIN HH_VisitVerification ver on ver.VisitNo = v.ID
+INNER JOIN HH_Customer c on c.CustomerNo = v.CUstomerNo
+INNER JOIN hh_CustomerAttr atr on atr.CustomerNO = v.CUstomerNo and atr.AttrID = 'Company_2' and atr.AttrVal = 1
+LEFT JOIN HH_Region reg on reg.RegionNo = c.RegionNo
+LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.DistrictNo
+LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
+LEFT JOIN (
+SELECT vv.CUstomerNo , MIN(vv.starttime) fv FROM V_HH_VisitDuration vv
+INNER JOIN hh_MeasureTake m on m.visitId = vv.ID
+GROUP BY vv.CUstomerNo
+) x on x.CUstomerNo = v.CUstomerNo and x.fv = v.starttime
+where ((PositiveVisit=1) OR (PositiveVisit=0 and NCReasonID IS NOT NULL))
+and c.CustomerNameA not like 'xx%'
+and x.CUstomerNo IS NOT NULL
+and c.CityNo = ?
+
+UNION ALL
+
+SELECT 
+c.CUstomerNo
+, c.CustomerNameA
+, reg.RegionNameA
+, dis.DistrictNameA
+, cit.CityNameA
+, c.RegionNo
+, c.DistrictNo
+, c.CityNo
+, c.Latitude
+, c.Longitude
+FROM HH_Customer c
+INNER JOIN hh_CustomerAttr atr on atr.CustomerNO = c.CUstomerNo and atr.AttrID = 'Company_2' and atr.AttrVal = 2
+LEFT JOIN HH_Region reg on reg.RegionNo = c.RegionNo
+LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.DistrictNo
+LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
+WHERE c.CityNo = ?
+
+        ";
+
+        $dataSB = collect(DB::connection('wri')->select($SQL1 , [$area , $area]));
+
+        $SQL2 = "
+SELECT *
+FROM
+(
+SELECT 
+am.CustomerName as CustomerNameA
+, am.lat as Latitude
+, am.lon as Longitude
+, RegionName as RegionNameA
+, DistrictName as DistrictNameA
+, CityName as CityNameA
+, 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) citySB
+FROM WR_IRQ_AmeenCustomers am
+WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL
+) tbl
+where tbl.citySB = ?
+        ";
+
+        $dataAmeen = collect(DB::connection('wri')->select($SQL2 , [$area]));
+
+        $polygon = collect([]);
+        $p = collect(DB::connection('wri')->select(" SELECT * FROM WR_Area_Polygon WHERE Code = ? " , [$area]));
+        if (!empty($p)){
+            $polygon = $p[0]->polypoints;
+        }
+
+        return compact('dataSB' , 'dataAmeen','polygon');
+
+    }
+
 
 
     ///////////////////////////////////////////////

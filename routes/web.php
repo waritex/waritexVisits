@@ -60,6 +60,7 @@ Route::post('/readings','ScannerController@catch_readings');
 Route::get('/get_gpsreadings','ScannerController@fetchAllReadings');
 Route::post('/get_gpsreadings','ScannerController@fetchAllReadings');
 Route::post('/get_gpsreadings_admin','ScannerController@fetchAllReadingsAdmin');
+Route::post('/get_Ameencc','ScannerController@AmeenMap');
 //Test Routes:
 
 ////////////////////////////////////////////////////////////////////
