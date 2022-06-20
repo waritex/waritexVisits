@@ -628,7 +628,7 @@ LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH
 LEFT JOIN WR_Area_Polygon on WR_Area_Polygon.buid = HH_Customer.buid and WR_Area_Polygon.Code = HH_Customer.CityNo
 
 WHERE 1=1
-AND V_JPlans.AssignedTO = 'IRQ020'
+AND V_JPlans.AssignedTO in ('IRQ004','IRQ007','IRQ011','IRQ017')
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
 AND HH_Customer.inactive = 0
 ) as t 
