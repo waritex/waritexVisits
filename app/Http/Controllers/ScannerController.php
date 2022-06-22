@@ -348,6 +348,30 @@ where tbl.citySB = ?
     }
 
 
+    public function getNewCustomersScannersData(Request $request)
+    {
+        $area = $request->post('area');
+        $salesman = $request->post('salesman');
+        $SQL2 = "
+SELECT
+c.CustomerNo
+, c.CustomerNameA
+, c.Latitude
+, c.Longitude
+FROM HH_Customer c
+INNER JOIN hh_CustomerAttr atr on atr.CustomerNO = c.CustomerNo and atr.AttrID = 'company_2'
+WHERE 1=1
+and c.Inactive = 0
+and (c.CityNo IS NOT NULL OR c.CityNo != '')
+and c.SalesmanNo = ?
+and c.CityNo = ?
+        ";
+
+        $scanner = collect(DB::connection('wri')->select($SQL2 , [$salesman , $area]));
+        return compact('scanner');
+    }
+
+
 
     ///////////////////////////////////////////////
     // Date Functions
@@ -461,6 +485,46 @@ where tbl.citySB = ?
         return array("x" => $pointString->lat, "y" => $pointString->lng);
     }
 
+
+    private function getAllAreas(){
+        $SQL = "
+        WITH Areas as (
+SELECT 
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end AreaName
+, CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end AreaCode
+FROM
+HH_Region reg
+INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
+INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
+WHERE reg.buid = 105
+GROUP BY 
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end
+, CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end
+)
+, am as (
+SELECT 
+am.CustomerName as CustomerNameA
+, am.lat as Latitude
+, am.lon as Longitude
+, RegionName as RegionNameA
+, DistrictName as DistrictNameA
+, CityName as CityNameA
+, am.regionNo
+, 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) citySB
+, CASE WHEN RegionNo = 'BGH' THEN (RegionNo + '-' + 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3)) ELSE RegionNo end AreaCode
+FROM WR_IRQ_AmeenCustomers am
+WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL
+)
+
+SELECT 
+*
+, (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameenCustomers
+, (SELECT polypoints from WR_Area_Polygon p where 'BGH-'+p.Code = areas.AreaCode) polypoints
+FROM Areas
+        ";
+    }
 
 
 }

@@ -587,6 +587,12 @@ ORDER BY t.DealNumber desc";
 , 0 as AVGSales	
 , CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
 , '{\"fillColor\":\"red\" , \"path\":'+t.svgpath+'}' svg   
+, (SELECT COUNT(am.CardID) FROM WR_IRQ_AmeenCustomers am WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL 
+and am.regionNo = t.RegionNo 
+and 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) = t.CityNo
+) ameen
 FROM
 (
 SELECT 
