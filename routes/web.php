@@ -63,7 +63,8 @@ Route::post('/get_gpsreadings_admin','ScannerController@fetchAllReadingsAdmin');
 Route::post('/get_Ameencc','ScannerController@AmeenMap');
 Route::post('/get_Scannerc','ScannerController@getNewCustomersScannersData');
 //Test Routes:
-Route::get('/ttt/{lat}/{lng}','AreaController@test2');
+Route::get('/ttt','AreaController@test2');
+Route::get('/taskk','AreaController@task');
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 ///

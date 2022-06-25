@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\VisitKSAController;
 use App\Http\Controllers\VisitSYRController;
@@ -36,6 +37,8 @@ class Kernel extends ConsoleKernel
         $jor = new VisitJORController();
         $syr = new VisitSYRController();
         $ksa = new VisitKSAController();
+        $area = new AreaController();
+
         try{
             $schedule->call(function () use($irq){
                 $irq->task();
@@ -79,6 +82,17 @@ class Kernel extends ConsoleKernel
                 ->withoutOverlapping();
         }
         catch (\Exception $e){echo "error in KSA";}
+
+        try{
+            $schedule->call(function () use($area){
+                $area->task();
+            })
+                ->name('googleArea')
+                ->everyMinute()
+                ->appendOutputTo(storage_path('app/aassdd.log'))
+                ->withoutOverlapping();
+        }
+        catch (\Exception $e){echo "error in Area Find";}
 
     }
 

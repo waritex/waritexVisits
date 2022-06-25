@@ -55,7 +55,7 @@ class AreaController extends Controller
             $city = $this->getAreaForCustomer($customer , $areas);
             if ($city != null){
                 // update customer info
-                $this->updateCustomer($customer , $city['area']['Code']);
+                $this->updateCustomer($customer , $city['area']->Code);
             }
         }
     }
@@ -99,8 +99,9 @@ INNER JOIN survey on survey.CUstomerNo = v.CUstomerNo and survey.firstVisit = v.
             $c['lng'] = $cus->lng;
             $c['CUstomerNo'] = $cus->CUstomerNo;
         }
+
         $SQL = " UPDATE HH_Customer SET Latitude = ? , Longitude = ? , RegionNo = ? , DistrictNo = ? , CityNo = ?  WHERE CustomerNo = ?  ";
-        $up = DB::connection('wri')->update($SQL , [ $c['lat'] , $c['lng'] , $c['CUstomerNo'] , $reg , $dis , $city ]);
+        $up = DB::connection('wri')->update($SQL , [ $c['lat'] , $c['lng'] , $reg , $dis , $city , $c['CUstomerNo'] ]);
         return $up;
     }
 
