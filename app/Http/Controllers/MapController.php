@@ -685,7 +685,7 @@ SELECT
 , AreaName as city
 , LEFT(AreaCode , 3) as RegionNo
 , RIGHT(AreaCode,5) as CityNo
-, (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameenCustomers
+, (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameen
 , (SELECT polypoints from WR_Area_Polygon p where 'BGH-'+p.Code = areas.AreaCode) polypoints
 FROM Areas
 ) tbl
