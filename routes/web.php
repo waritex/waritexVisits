@@ -49,6 +49,7 @@ Route::post('/get_all_salesman', 'AuthController@get_all_salesman');
 Route::post('/get_all_customers','MapController@get_all_customers')->name('get_all_customers');
 Route::post('/get_customers','MapController@get_customers');
 Route::post('/get_customers_area','MapController@get_customers_by_areas');
+Route::post('/get_all_scanner_area','MapController@getScannerAllArea');
 Route::post('/get_report_area','MapController@get_report_by_areas');
 Route::post('/saveinfo','MapController@save_info');
 Route::post('/get_noloc','MapController@get_no_loc');

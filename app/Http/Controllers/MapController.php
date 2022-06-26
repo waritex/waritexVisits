@@ -644,6 +644,63 @@ ORDER BY RegionNo , CityNameA
         return empty($custs)? false : $custs;
     }
 
+    public function getScannerAllArea()
+    {
+        $sql = "
+WITH Areas as (
+SELECT 
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end AreaName
+, CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end AreaCode
+FROM
+HH_Region reg
+INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
+INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
+WHERE reg.buid = 105
+GROUP BY 
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end
+, CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end
+)
+, am as (
+SELECT 
+am.CustomerName as CustomerNameA
+, am.lat as Latitude
+, am.lon as Longitude
+, RegionName as RegionNameA
+, DistrictName as DistrictNameA
+, CityName as CityNameA
+, am.regionNo
+, 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) citySB
+, CASE WHEN RegionNo = 'BGH' THEN (RegionNo + '-' + 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3)) ELSE RegionNo end AreaCode
+FROM WR_IRQ_AmeenCustomers am
+WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL
+)
+
+SELECT *
+FROM
+(
+SELECT 
+*
+, AreaName as city
+, LEFT(AreaCode , 3) as RegionNo
+, RIGHT(AreaCode,5) as CityNo
+, (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameenCustomers
+, (SELECT polypoints from WR_Area_Polygon p where 'BGH-'+p.Code = areas.AreaCode) polypoints
+FROM Areas
+) tbl
+WHERE tbl.polypoints IS NOT NULL
+        ";
+
+        $areas = DB::connection('wri')->select($sql , []);
+        $areas =  empty($areas)? false : $areas;
+        if (!$areas)
+            return response()->json('No Customers In Today\'s Route',500);
+        $res = collect($areas)->groupBy('city');
+        $avgs = [];
+        return compact('res' , 'avgs');
+    }
+
     private function getReportInfo($salesman)
     {
         $SQL = " EXEC WR_MAP_Areas_Statistics ? ";
