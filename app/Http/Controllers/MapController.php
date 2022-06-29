@@ -644,8 +644,13 @@ ORDER BY RegionNo , CityNameA
         return empty($custs)? false : $custs;
     }
 
-    public function getScannerAllArea()
+    public function getScannerAllArea(Request $request)
     {
+        $salesman = $request->post('salesman',false);
+        $s = "  ";
+        if ($salesman!==false)
+            $s = "  and tbl.salesman = '$salesman' ";
+
         $sql = "
 WITH Areas as (
 SELECT 
@@ -687,9 +692,11 @@ SELECT
 , RIGHT(AreaCode,5) as CityNo
 , (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameen
 , (SELECT polypoints from WR_Area_Polygon p where 'BGH-'+p.Code = areas.AreaCode) polypoints
+, (SELECT salesmancode FROM WR_salesmen_Area a where a.CityCode = RIGHT(AreaCode,5) ) as salesman
 FROM Areas
 ) tbl
 WHERE tbl.polypoints IS NOT NULL
+$s
         ";
 
         $areas = DB::connection('wri')->select($sql , []);
