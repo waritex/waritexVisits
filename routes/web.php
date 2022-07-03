@@ -66,6 +66,10 @@ Route::post('/get_Scannerc','ScannerController@getNewCustomersScannersData');
 //Test Routes:
 Route::get('/ttt','AreaController@test2');
 Route::get('/taskk','AreaController@task');
+
+// WR_Payments:
+Route::post('/py/login','PaymentController@auth')->name('py_login');
+Route::get('/py/payments','PaymentController@get_all_payments')->name('py_payments');
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 ///
