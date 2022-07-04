@@ -40,5 +40,10 @@ class PaymentController extends Controller
         return $payments;
     }
 
+    public function get_all_users(Request $request)
+    {
+        return $users = WR_PY_User::where('id','!=' , $request->post('id',''))->get();
+    }
+
 
 }

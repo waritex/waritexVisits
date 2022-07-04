@@ -632,11 +632,10 @@ LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_Dist
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
 LEFT JOIN WR_Area_Polygon on WR_Area_Polygon.buid = HH_Customer.buid and WR_Area_Polygon.Code = HH_Customer.CityNo
-
 WHERE 1=1
-AND V_JPlans.AssignedTO in ('IRQ004','IRQ007','IRQ011','IRQ017')
+AND (V_JPlans.AssignedTO in ('IRQ004','IRQ007','IRQ011','IRQ017') OR  (V_JPlans.AssignedTO='IRQ020'))
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
-AND HH_Customer.inactive = 0
+AND HH_Customer.inactive = 0			 
 ) as t 
 ORDER BY RegionNo , CityNameA
          ";
