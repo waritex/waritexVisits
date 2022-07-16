@@ -164,7 +164,7 @@ class PaymentController extends Controller
 
         if ($user_id == false)
             return abort(400,'please login...');
-        DB::statement( DB::raw( "SET @s = $user_id "));
+        DB::statement( DB::raw( "DECLARE @s int; SET @s = $user_id "));
         if ($page===false)
             $page = 1;
         $itemPerPage = 18;
@@ -228,7 +228,7 @@ LIMIT $offset , $itemPerPage
 
         if ($user_id == false)
             return abort(400,'please login...');
-        DB::statement( DB::raw( "SET @s = $user_id "));
+        DB::statement( DB::raw( "DECLARE @s int; SET @s = $user_id "));
         if ($page===false)
             $page = 1;
         $itemPerPage = 18;
