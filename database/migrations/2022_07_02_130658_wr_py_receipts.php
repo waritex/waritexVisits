@@ -13,7 +13,7 @@ class WrPyReceipts extends Migration
      */
     public function up()
     {
-        Schema::create('wr_py_receipts', function (Blueprint $table) {
+        Schema::connection('mysql')->create('wr_py_receipts', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('from_id');
             $table->unsignedInteger('to_id');

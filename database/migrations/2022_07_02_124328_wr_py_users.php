@@ -13,7 +13,7 @@ class WrPyUsers extends Migration
      */
     public function up()
     {
-        Schema::create('wr_py_users', function (Blueprint $table) {
+        Schema::connection('mysql')->create('wr_py_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->string('username');
