@@ -69,7 +69,12 @@ Route::get('/taskk','AreaController@task');
 
 // WR_Payments:
 Route::post('/py/login','PaymentController@auth')->name('py_login');
+Route::post('/py/updatelogin','PaymentController@updateAuth')->name('py_login');
 Route::post('/py/users','PaymentController@get_all_users')->name('py_users');
+Route::post('/py/add','PaymentController@add_payment')->name('py_add');
+Route::post('/py/getpy','PaymentController@get_user_payments_with_search')->name('py_getpy');
+Route::post('/py/getpyadmin','PaymentController@get_admin_payments_with_search')->name('py_getpyadmin');
+Route::post('/py/uppyst','PaymentController@update_status')->name('py_uppyst');
 Route::get('/py/payments','PaymentController@get_all_payments')->name('py_payments');
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////

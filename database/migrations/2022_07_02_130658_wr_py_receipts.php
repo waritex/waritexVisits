@@ -15,13 +15,13 @@ class WrPyReceipts extends Migration
     {
         Schema::create('wr_py_receipts', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('code');
             $table->unsignedInteger('from_id');
             $table->unsignedInteger('to_id');
             $table->decimal('amount');
             $table->string('currency',3)->default('SYP');
             $table->dateTime('date');
             $table->text('notes')->nullable();
+            $table->dateTime('to_status_update_at')->nullable();
             $table->integer('status')->default(0);
             $table->unsignedInteger('status_update_by')->nullable();
             $table->dateTime('status_update_at')->nullable();
