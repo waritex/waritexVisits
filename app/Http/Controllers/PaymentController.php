@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\DB;
 class PaymentController extends Controller
 {
 
+    public $db;
+
     public function __construct()
     {
-
+        $this->db = DB::connection('mysql');
     }
 
     public function auth(Request $request)
@@ -66,7 +68,7 @@ class PaymentController extends Controller
         FROM wr_py_receipts r
         WHERE r.id = ?
         ";
-        $payments = collect(DB::select($SQL , [$id]));
+        $payments = collect($this->db->select($SQL , [$id]));
         return $payments;
     }
 
@@ -164,7 +166,7 @@ class PaymentController extends Controller
 
         if ($user_id == false)
             return abort(400,'please login...');
-        DB::statement( DB::raw( "DECLARE @s int; SET @s = $user_id "));
+        $this->db->statement( $this->db->raw( "SET @s = $user_id "));
         if ($page===false)
             $page = 1;
         $itemPerPage = 18;
@@ -215,7 +217,7 @@ $sQuery
 order by created_at desc
 LIMIT $offset , $itemPerPage      
         ";
-        $payments = collect(DB::select($SQL , []));
+        $payments = collect($this->db->select($SQL , []));
         return $payments;
     }
 
@@ -228,7 +230,7 @@ LIMIT $offset , $itemPerPage
 
         if ($user_id == false)
             return abort(400,'please login...');
-        DB::statement( DB::raw( "DECLARE @s int; SET @s = $user_id "));
+        $this->db->statement( $this->db->raw( "SET @s = $user_id "));
         if ($page===false)
             $page = 1;
         $itemPerPage = 18;
@@ -279,7 +281,7 @@ $sQuery
 order by created_at desc
 LIMIT $offset , $itemPerPage      
         ";
-        $payments = collect(DB::select($SQL , []));
+        $payments = collect($this->db->select($SQL , []));
         return $payments;
     }
 
