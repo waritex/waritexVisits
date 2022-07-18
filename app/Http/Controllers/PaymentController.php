@@ -53,9 +53,9 @@ class PaymentController extends Controller
     {
         $SQL = "
         SELECT r.*
-        , case WHEN r.status = 0 THEN 'انتظار المستلم'
+        , case WHEN r.status = 0 THEN 'انتظار المرسل'
                WHEN r.status = 1 THEN 'انتظار الادارة' 
-               WHEN r.status = 2 THEN 'المستلم ألغى' 
+               WHEN r.status = 2 THEN 'المرسل ألغى' 
                WHEN r.status = 3 THEN 'الادارة أكدت' 
                WHEN r.status = 4 THEN 'الادارة ألغت' 
           end as stext    
@@ -194,9 +194,9 @@ SELECT * FROM
         , u2.name as from_name
         , case WHEN r.to_id = @s then 0 WHEN r.from_id = @s then 1 end as type
         , case WHEN r.to_id = @s then 'مستلم' WHEN r.from_id = @s then 'مرسل' end as type_text
-        , case WHEN r.status = 0 THEN 'انتظار المستلم'
+        , case WHEN r.status = 0 THEN 'انتظار المرسل'
                WHEN r.status = 1 THEN 'انتظار الادارة' 
-               WHEN r.status = 2 THEN 'المستلم ألغى' 
+               WHEN r.status = 2 THEN 'المرسل ألغى' 
                WHEN r.status = 3 THEN 'الادارة أكدت' 
                WHEN r.status = 4 THEN 'الادارة ألغت' 
           end as stext    
@@ -257,10 +257,10 @@ SELECT * FROM
         , u1.name as to_name
         , u2.name as from_name
         , case WHEN r.to_id = @s then 0 ELSE 3 end as type
-        , case WHEN r.to_id = @s then 'مستلم' WHEN r.from_id = @s then 'مرسل' ELSE 'إدارة' end as type_text
-        , case WHEN r.status = 0 THEN 'انتظار المستلم'
+        , case WHEN r.to_id = @s then 'مستلم' WHEN r.from_id = @s then 'مرسل' ELSE 'مراقبة' end as type_text
+        , case WHEN r.status = 0 THEN 'انتظار المرسل'
                WHEN r.status = 1 THEN 'انتظار الادارة' 
-               WHEN r.status = 2 THEN 'المستلم ألغى' 
+               WHEN r.status = 2 THEN 'المرسل ألغى' 
                WHEN r.status = 3 THEN 'الادارة أكدت' 
                WHEN r.status = 4 THEN 'الادارة ألغت' 
           end as stext    
