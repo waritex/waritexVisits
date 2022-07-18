@@ -90,6 +90,10 @@ class PaymentController extends Controller
         try{
             $p = new WR_PY_Receipt();
             $p->to_id = $data['to_id'];
+            if ($data['to_id']==-1){
+                $p->to_id = 6;
+                $p->status = 2;
+            }
             $p->from_id = $data['from_id'];
             $p->amount = $data['amount'];
             $p->currency = $data['currency'];
@@ -193,7 +197,7 @@ SELECT * FROM
         , u1.name as to_name
         , u2.name as from_name
         , case WHEN r.to_id = @s then 0 WHEN r.from_id = @s then 1 end as type
-        , case WHEN r.to_id = @s then 'مستلم' WHEN r.from_id = @s then 'مرسل' end as type_text
+        , case WHEN r.to_id = @s then 'قبض' WHEN r.from_id = @s then 'دفع' end as type_text
         , case WHEN r.status = 0 THEN 'انتظار المرسل'
                WHEN r.status = 1 THEN 'انتظار الادارة' 
                WHEN r.status = 2 THEN 'المرسل ألغى' 
@@ -257,7 +261,7 @@ SELECT * FROM
         , u1.name as to_name
         , u2.name as from_name
         , case WHEN r.to_id = @s then 0 ELSE 3 end as type
-        , case WHEN r.to_id = @s then 'مستلم' WHEN r.from_id = @s then 'مرسل' ELSE 'مراقبة' end as type_text
+        , case WHEN r.to_id = @s then 'قبض' WHEN r.from_id = @s then 'دفع' ELSE 'مراقبة' end as type_text
         , case WHEN r.status = 0 THEN 'انتظار المرسل'
                WHEN r.status = 1 THEN 'انتظار الادارة' 
                WHEN r.status = 2 THEN 'المرسل ألغى' 
