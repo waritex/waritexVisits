@@ -90,9 +90,10 @@ class PaymentController extends Controller
         try{
             $p = new WR_PY_Receipt();
             $p->to_id = $data['to_id'];
-            if ($data['to_id']==-1){
+            if ($data['to_id']==-1){    // pay status
                 $p->to_id = 6;
-                $p->status = 2;
+                $p->status = 1;
+                $p->to_status_update_at = now();
             }
             $p->from_id = $data['from_id'];
             $p->amount = $data['amount'];
