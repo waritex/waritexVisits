@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use NumberFormatter;
 
 class PaymentController extends Controller
 {
