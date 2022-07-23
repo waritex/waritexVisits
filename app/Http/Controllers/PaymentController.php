@@ -96,6 +96,10 @@ class PaymentController extends Controller
                 $p->to_status_update_at = now();
             }
             $p->from_id = $data['from_id'];
+            if ($data['from_id']==6){    // pay status
+                $p->status = 1;
+                $p->to_status_update_at = now();
+            }
             $p->amount = $data['amount'];
             $p->currency = $data['currency'];
             $p->notes = $data['notes'];
