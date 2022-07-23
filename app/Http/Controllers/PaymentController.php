@@ -100,7 +100,16 @@ class PaymentController extends Controller
                 $p->status = 1;
                 $p->to_status_update_at = now();
             }
-            $p->amount = $data['amount'];
+            /***********************/
+            try{
+                $fmt = numfmt_create( 'AR_EG', NumberFormatter::DECIMAL );
+                $num = $data['amount'];
+                $x = numfmt_parse($fmt, $num);
+                $p->amount = $x ;
+            }
+            catch (\Exception $exception){
+                $p->amount = $data['amount'];
+            }
             $p->currency = $data['currency'];
             $p->notes = $data['notes'];
             $p->date = Carbon::parse($data['date']);
