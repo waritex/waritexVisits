@@ -273,7 +273,7 @@ order by Balance desc
         $s = MapUser::where('code', $salesman)->first();
         if ($s->scanner==1 && $s->groups==null)
             return $this->scanner();
-        if (!$Customers = $this->get_routes_customers_by_area($salesman,$area))
+        if (!$Customers = $this->get_routes_customers_by_area($salesman,$area,$s->groups))
             return response()->json('No Customers In Today\'s Route',500);
         $info = $this->get_customer_items_info($salesman,false,false);
         $res = [];
@@ -609,10 +609,10 @@ ORDER BY t.DealNumber desc";
         return empty($info)? [] : collect($info)->groupBy('CustomerID');
     }
 
-    private function get_routes_customers_by_area($salesman , $area){
-        $SQL = " EXEC WR_Map_Customers_BY_Areas ? , ? , NULL , NULL , ? ";
+    private function get_routes_customers_by_area($salesman , $area , $group){
+        $SQL = " EXEC WR_Map_Customers_BY_Areas ? , ? , NULL , NULL , ?  , ?";
         $user = MapUser::where('code', $salesman)->first();
-        $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman , $area]);
+        $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman , $area , $group]);
         return empty($custs)? false : $custs;
     }
 
