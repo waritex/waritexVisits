@@ -361,10 +361,10 @@ WHERE 1=1
 AND (V_JPlans.AssignedTO in ( $qry )
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
 AND HH_Customer.inactive = 0	
-AND HH_Customer.CityNo = ?	 
+AND HH_Customer.CityNo = '$area'	 
 -- ORDER BY RegionNo , CityNameA
         ";
-        $custs = DB::connection('wri')->select($SQL , [$area]);
+        $custs = DB::connection('wri')->select($SQL , []);
         return collect($custs);
     }
 
