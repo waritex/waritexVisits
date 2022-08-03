@@ -329,7 +329,7 @@ order by Balance desc
 
     private function getBannedCustomers($group){
         $groups = MapUser::where('groups','!=', $group)
-            ->whereNotNull('groups')->get('code');
+            ->whereNotNull('groups')->get();
         $qry = "''";
         if ($groups && $groups->count() > 0)
             $qry = $groups->pluck('code')
