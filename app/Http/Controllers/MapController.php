@@ -358,13 +358,12 @@ LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo 
 LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
 LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 WHERE 1=1
-AND (V_JPlans.AssignedTO in ( $qry )
+AND V_JPlans.AssignedTO in ( $qry )
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
 AND HH_Customer.inactive = 0	
-AND HH_Customer.CityNo = '$area'	 
--- ORDER BY RegionNo , CityNameA
+AND HH_Customer.CityNo = ?	 
         ";
-        $custs = DB::connection('wri')->select($SQL , []);
+        $custs = DB::connection('wri')->select($SQL , [$area]);
         return collect($custs);
     }
 
