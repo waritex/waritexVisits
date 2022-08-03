@@ -292,7 +292,7 @@ order by Balance desc
         }
         catch (\Exception $exception){}
         $banned = [];
-        if ($s->groups!=null && $area!==false)
+        if ($s->groups!=null && $area!==false && $area!==null)
             $banned = $this->getBannedCustomers($s->groups,$area);
         return compact('res' , 'avgs','banned');
     }
