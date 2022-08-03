@@ -292,8 +292,8 @@ order by Balance desc
         }
         catch (\Exception $exception){}
         $banned = [];
-        if ($s->groups!=null)
-            $banned = $this->getBannedCustomers($s->groups);
+        if ($s->groups!=null && $area!==false)
+            $banned = $this->getBannedCustomers($s->groups,$area);
         return compact('res' , 'avgs','banned');
     }
 
@@ -327,7 +327,7 @@ order by Balance desc
 
     }
 
-    private function getBannedCustomers($group){
+    private function getBannedCustomers($group , $area){
         $groups = MapUser::where('groups','!=', $group)
             ->whereNotNull('groups')->get();
         $qry = "''";
@@ -360,10 +360,11 @@ LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr
 WHERE 1=1
 AND (V_JPlans.AssignedTO in ( $qry )
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
-AND HH_Customer.inactive = 0			 
-ORDER BY RegionNo , CityNameA
+AND HH_Customer.inactive = 0	
+AND HH_Customer.CityNo = ?	 
+-- ORDER BY RegionNo , CityNameA
         ";
-        $custs = DB::connection('wri')->select($SQL , []);
+        $custs = DB::connection('wri')->select($SQL , [$area]);
         return collect($custs);
     }
 
