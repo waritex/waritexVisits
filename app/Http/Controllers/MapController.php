@@ -263,14 +263,17 @@ order by Balance desc
     public function get_customers_by_areas(Request $request)
     {
         $salesman = $request->post('salesman',false);
+        $area = $request->post('area',false);
+        if($area==false)
+            $area = null;
         if (!$salesman)
             return response()->json('Error In User Please Ask Waritex For This',500);
         $today = now()->toDateString();
         // get customers's route:
         $s = MapUser::where('code', $salesman)->first();
-        if ($s->scanner==1)
+        if ($s->scanner==1 && $s->groups==null)
             return $this->scanner();
-        if (!$Customers = $this->get_routes_customers_by_area($salesman))
+        if (!$Customers = $this->get_routes_customers_by_area($salesman,$area))
             return response()->json('No Customers In Today\'s Route',500);
         $info = $this->get_customer_items_info($salesman,false,false);
         $res = [];
@@ -284,11 +287,14 @@ order by Balance desc
         }
         $res = collect($res)->groupBy('city');
         try{
-            $buid = MapUser::where('code', $salesman)->first()->buid;
+            $buid = $s->buid;
             $avgs = $this->getVisitsAvg($buid , $salesman);
         }
         catch (\Exception $exception){}
-        return compact('res' , 'avgs');
+        $banned = [];
+        if ($s->groups!=null)
+            $banned = $this->getBannedCustomers($s->groups);
+        return compact('res' , 'avgs','banned');
     }
 
     public function get_report_by_areas(Request $request)
@@ -319,6 +325,46 @@ order by Balance desc
             }
         }
 
+    }
+
+    private function getBannedCustomers($group){
+        $groups = MapUser::where('groups','!=', $group)
+            ->whereNotNull('groups')->get('code');
+        $qry = "''";
+        if ($groups && $groups->count() > 0)
+            $qry = $groups->pluck('code')
+                ->transform(function ($item, $key) {return "'".$item."'";})
+                ->implode(',');
+
+        $SQL = "
+        SELECT 
+V_JPlans.AssignedTO			as SalesmanCode
+,V_JPlans.CustomerID			as CustomerID
+,HH_Customer.CustomerNameA		as CustomerName
+,HH_Customer.Latitude			as Lat
+,HH_Customer.Longitude			as Lng
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_District.DistrictNameA
+, HH_City.CityNameA
+, HH_Area.AreaNameA
+, NULL as AttrID				 
+FROM V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_District.DistrictNo = HH_Customer.DistrictNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+WHERE 1=1
+AND (V_JPlans.AssignedTO in ( $qry )
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
+AND HH_Customer.inactive = 0			 
+ORDER BY RegionNo , CityNameA
+        ";
+        $custs = DB::connection('wri')->select($SQL , []);
+        return collect($custs);
     }
 
 
@@ -563,10 +609,10 @@ ORDER BY t.DealNumber desc";
         return empty($info)? [] : collect($info)->groupBy('CustomerID');
     }
 
-    private function get_routes_customers_by_area($salesman){
-        $SQL = " EXEC WR_Map_Customers_BY_Areas ? , ? ";
+    private function get_routes_customers_by_area($salesman , $area){
+        $SQL = " EXEC WR_Map_Customers_BY_Areas ? , ? , NULL , NULL , ? ";
         $user = MapUser::where('code', $salesman)->first();
-        $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman]);
+        $custs = DB::connection('wri')->select($SQL , [$user->buid,$salesman , $area]);
         return empty($custs)? false : $custs;
     }
 
