@@ -260,6 +260,10 @@ order by Balance desc
         // format response
     }
 
+    /////////////////////
+    /// Used Function NOW...!!!
+    /// /////////////////
+    /// /////////////////
     public function get_customers_by_areas(Request $request)
     {
         $salesman = $request->post('salesman',false);
