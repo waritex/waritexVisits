@@ -341,7 +341,7 @@ order by Balance desc
                 ->implode(',');
 
         $SQL = "
-        SELECT 
+        SELECT
 V_JPlans.AssignedTO			as SalesmanCode
 ,V_JPlans.CustomerID			as CustomerID
 ,HH_Customer.CustomerNameA		as CustomerName
@@ -353,7 +353,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , HH_District.DistrictNameA
 , HH_City.CityNameA
 , HH_Area.AreaNameA
-, NULL as AttrID				 
+, NULL as AttrID
 FROM V_JPlans
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
@@ -363,9 +363,9 @@ LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH
 LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
 WHERE 1=1
 AND V_JPlans.AssignedTO in ( $qry )
-AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
-AND HH_Customer.inactive = 0	
-AND HH_Customer.CityNo = ?	 
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
+AND HH_Customer.inactive = 0
+AND HH_Customer.CityNo = ?
         ";
         $custs = DB::connection('wri')->select($SQL , [$area]);
         return collect($custs);
@@ -423,17 +423,17 @@ AND HH_Customer.CityNo = ?
 
     private function get_today_visits_ordered($salesman , $date , $dateRange){
         $visits = DB::connection('wri')->select("
-        SELECT 
+        SELECT
           dbo.V_HH_VisitDuration.ID					        AS visit_id
         , dbo.V_HH_VisitDuration.CUstomerNo			        AS customer_id
         , CAST( dbo.V_HH_VisitDuration.starttime AS Date )  AS visit_date
 		, CAST( dbo.V_HH_VisitDuration.starttime AS Time )  AS visit_time
-        , row_number() OVER (ORDER BY starttime asc)        AS 'order'			 
+        , row_number() OVER (ORDER BY starttime asc)        AS 'order'
         FROM dbo.V_HH_VisitDuration
-        
-        WHERE 
+
+        WHERE
         ( CAST( dbo.V_HH_VisitDuration.starttime as Date ) between ? and  ? ) AND ( dbo.V_HH_VisitDuration.SalesmanNo = ? )
-		ORDER BY visit_time ASC	  
+		ORDER BY visit_time ASC
         " , [$dateRange , $date , $salesman]);
 
         return empty($visits)? false : $visits;
@@ -441,7 +441,7 @@ AND HH_Customer.CityNo = ?
 
     private function get_no_location_customers_salesbuzz($salesman , $weekNum , $day){
         $customers = DB::connection('wri')->select("
-        SELECT 
+        SELECT
        V_JPlans.[AssignedTO]			as SalesmanCode
       ,V_JPlans.[CustomerID]			as CustomerID
 	  ,HH_Customer.[CustomerNameA]		as CustomerName
@@ -460,7 +460,7 @@ AND HH_Customer.CityNo = ?
 	  LEFT JOIN HH_City ON HH_Customer.cityno = HH_City.cityno
 	  LEFT JOIN HH_District ON HH_Customer.districtno = HH_District.districtno
 	  LEFT JOIN HH_Region ON HH_Customer.regionno = HH_Region.regionno
-	  WHERE 
+	  WHERE
 	  V_JPlans.[AssignedTO] = ?  /* AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1 */
       AND (HH_Customer.[Latitude] = 0 OR HH_Customer.[Latitude] IS NULL)
         " , [$salesman /*, $weekNum*/]);
@@ -470,12 +470,12 @@ AND HH_Customer.CityNo = ?
     private function get_route_schedule($salesman)
     {
         $SQL = "
-        SELECT 
+        SELECT
        distinct (AreaNameA) as Area
 	   , CityNameA as City
 	   , DistrictNameA as District
 	   , RegionNameA as Region
-      ,V_JPlans.[StartWeek] as Week  
+      ,V_JPlans.[StartWeek] as Week
       ,'SAT' as Day , 'السبت' as ArDay , 1 as OrDay
       FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
@@ -484,8 +484,8 @@ AND HH_Customer.CityNo = ?
 	  INNER JOIN HH_City ON HH_Customer.CityNo = HH_City.CITYNO
 	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
       WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.sat  = 1
-	  union 
-	  (SELECT 
+	  union
+	  (SELECT
        distinct (AreaNameA)
 	   , CityNameA
 	   , DistrictNameA
@@ -500,8 +500,8 @@ AND HH_Customer.CityNo = ?
 	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
       WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.sun  = 1
 	  )
-	  union 
-	  (SELECT 
+	  union
+	  (SELECT
        distinct (AreaNameA)
 	   , CityNameA
 	   , DistrictNameA
@@ -516,8 +516,8 @@ AND HH_Customer.CityNo = ?
 	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
       WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.mon  = 1
 	  )
-	  union 
-	  (SELECT 
+	  union
+	  (SELECT
        distinct (AreaNameA)
 	   , CityNameA
 	   , DistrictNameA
@@ -532,8 +532,8 @@ AND HH_Customer.CityNo = ?
 	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
       WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.tue  = 1
 	  )
-	  union 
-	  (SELECT 
+	  union
+	  (SELECT
        distinct (AreaNameA)
 	   , CityNameA
 	   , DistrictNameA
@@ -548,8 +548,8 @@ AND HH_Customer.CityNo = ?
 	  INNER JOIN HH_Area ON HH_Customer.AreaNo = HH_Area.AreaNo
       WHERE V_JPlans.[AssignedTO] = ?   and V_JPlans.wed  = 1
 	  )
-	  union 
-	  (SELECT 
+	  union
+	  (SELECT
        distinct (AreaNameA)
 	   , CityNameA
 	   , DistrictNameA
@@ -574,7 +574,7 @@ AND HH_Customer.CityNo = ?
         $user = MapUser::where('code', $salesman)->first();
         $buid = $user->buid;
         $SQL = "
-SELECT 
+SELECT
 vp.[CustomerID]			as CustomerID
 , t.*
 , Convert(int,Round(t.QTY/t.DealNumber,0)) as avgQty
@@ -629,23 +629,23 @@ ORDER BY t.DealNumber desc";
     }
 
     private function scannerBannedCustomers(){
-        $SQL = " 
+        $SQL = "
          SELECT *
 , 1 as DealCut
 , 1 as VisitCut
 , 0 AS visited
-, 0 as AVGSales	
+, 0 as AVGSales
 , CASE WHEN RegionNo != 'BGH' THEN ('م. ' + RegionNameA) ELSE CityNameA end as city
-, '{\"fillColor\":\"red\" , \"path\":'+t.svgpath+'}' svg   
+, '{\"fillColor\":\"red\" , \"path\":'+t.svgpath+'}' svg
 , (SELECT COUNT(am.CardID) FROM WR_IRQ_AmeenCustomers am WHERE 1=1
 and lat IS NOT NULL and lat != 0
-and am.DealAmeen = 1 and DealSB IS NULL 
-and am.regionNo = t.RegionNo 
+and am.DealAmeen = 1 and DealSB IS NULL
+and am.regionNo = t.RegionNo
 and 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) = t.CityNo
 ) ameen
 FROM
 (
-SELECT 
+SELECT
 V_JPlans.AssignedTO			as SalesmanCode
 ,V_JPlans.CustomerID			as CustomerID
 ,HH_Customer.CustomerNameA		as CustomerName
@@ -674,7 +674,7 @@ V_JPlans.AssignedTO			as SalesmanCode
 , null as Standday
 , 1 as MaxSales
 , 1 jallyqty
-, 1 jallyinv					 
+, 1 jallyinv
 FROM V_JPlans
 INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
 LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
@@ -684,9 +684,9 @@ LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH
 LEFT JOIN WR_Area_Polygon on WR_Area_Polygon.buid = HH_Customer.buid and WR_Area_Polygon.Code = HH_Customer.CityNo
 WHERE 1=1
 AND (V_JPlans.AssignedTO in ('IRQ004','IRQ007','IRQ011','IRQ017') OR  (V_JPlans.AssignedTO='IRQ020'))
-AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL) 
-AND HH_Customer.inactive = 0			 
-) as t 
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
+AND HH_Customer.inactive = 0
+) as t
 ORDER BY RegionNo , CityNameA
          ";
         $custs = DB::connection('wri')->select($SQL , []);
@@ -705,7 +705,7 @@ ORDER BY RegionNo , CityNameA
 
         $sql = "
 WITH Areas as (
-SELECT 
+SELECT
 CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end AreaName
 , CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end AreaCode
 FROM
@@ -713,12 +713,12 @@ HH_Region reg
 INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
 INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
 WHERE reg.buid = 105
-GROUP BY 
+GROUP BY
 CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end
 , CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end
 )
 , am as (
-SELECT 
+SELECT
 am.CustomerName as CustomerNameA
 , am.lat as Latitude
 , am.lon as Longitude
@@ -737,7 +737,7 @@ and am.DealAmeen = 1 and DealSB IS NULL
 SELECT *
 FROM
 (
-SELECT 
+SELECT
 *
 , AreaName as city
 , LEFT(AreaCode , 3) as RegionNo
@@ -748,6 +748,58 @@ SELECT
 FROM Areas
 ) tbl
 WHERE tbl.polypoints IS NOT NULL
+$s
+        ";
+
+        $sql = "
+WITH Areas as (
+SELECT
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end AreaName
+, cit.CITYNO AreaCode
+, reg.RegionNo
+FROM
+HH_Region reg
+INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
+INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
+WHERE reg.buid = 105
+GROUP BY
+CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end
+, reg.RegionNo
+, cit.CITYNO
+)
+, am as (
+SELECT
+am.CustomerName as CustomerNameA
+, am.lat as Latitude
+, am.lon as Longitude
+, RegionName as RegionNameA
+, DistrictName as DistrictNameA
+, CityName as CityNameA
+, am.regionNo
+, 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) citySB
+FROM WR_IRQ_AmeenCustomers am
+WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL
+)
+
+SELECT *
+FROM
+(
+SELECT
+ AreaCode
+, AreaName
+, AreaName as city
+, RegionNo as RegionNo
+, AreaCode as CityNo
+, (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.citySB = areas.AreaCode) ameen
+, (SELECT polypoints from WR_Area_Polygon p where (p.Code = areas.AreaCode)) polypoints
+, (SELECT salesmancode FROM WR_salesmen_Area a where a.CityCode = AreaCode  $s2  ) as salesman
+FROM Areas
+) tbl
+WHERE 1=1
+and tbl.polypoints IS NOT NULL
+and salesman = 'IRQ027'
 $s
         ";
 
