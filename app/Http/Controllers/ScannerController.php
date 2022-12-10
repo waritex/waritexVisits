@@ -316,8 +316,8 @@ WHERE c.CityNo = ?
         $dataSB = collect(DB::connection('wri')->select($SQL1 , [$area , $area]));
 
         $SQL2 = "
-DECLARE @city nvarchar(6) = ?
-DECLARE @bgh nvarchar(5) = (SELECT top 1 x.regionNo from HH_City x WHERE CITYNO = @city)
+DECLARE @city nvarchar(6) = ? ;
+DECLARE @bgh nvarchar(5) = (SELECT top 1 x.regionNo from HH_City x WHERE CITYNO = @city);
 SELECT *
 FROM
 (
