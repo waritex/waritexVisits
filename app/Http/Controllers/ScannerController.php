@@ -72,13 +72,13 @@ SELECT
 FROM
 	HH_Customer as cus
 inner join (SELECT x.CustomerNo , Max(x.Date) as maxo FROM AR_order as x WHERE x.BUID = 105 group by x.customerno) as s on s.CustomerNo = cus.CustomerNo
-WHERE 
+WHERE
 	cus.BUID = 105
 	and cus.Inactive = 0
 	and cus.Latitude !=0 and cus.Latitude is not null
 	and cus.Longitude !=0 and cus.Longitude is not null
 	and s.maxo >= DATEADD(DAY, -90, GETDATE())
-	and cus.cityno = ?	  
+	and cus.cityno = ?
         " , [$city]);
 
         return empty($customers)? false : $customers;
@@ -263,7 +263,7 @@ WHERE
         $salesman = $request->post('salesman');
 
         $SQL1 = "
-        select 
+        select
 v.CUstomerNo
 , c.CustomerNameA
 , reg.RegionNameA
@@ -293,7 +293,7 @@ and c.CityNo = ?
 
 UNION ALL
 
-SELECT 
+SELECT
 c.CUstomerNo
 , c.CustomerNameA
 , reg.RegionNameA
@@ -316,13 +316,16 @@ WHERE c.CityNo = ?
         $dataSB = collect(DB::connection('wri')->select($SQL1 , [$area , $area]));
 
         $SQL2 = "
+DECLARE @city nvarchar(6) = ?
+DECLARE @bgh nvarchar(5) = (SELECT top 1 x.regionNo from HH_City x WHERE CITYNO = @city)
 SELECT *
 FROM
 (
-SELECT 
+SELECT
 am.CustomerName as CustomerNameA
 , am.lat as Latitude
 , am.lon as Longitude
+, regionNo
 , RegionName as RegionNameA
 , DistrictName as DistrictNameA
 , CityName as CityNameA
@@ -332,7 +335,10 @@ WHERE 1=1
 and lat IS NOT NULL and lat != 0
 and am.DealAmeen = 1 and DealSB IS NULL
 ) tbl
-where tbl.citySB = ?
+WHERE
+(@bgh = 'BGH' and tbl.citySB = @city)
+OR
+(@bgh != 'BGH' and tbl.regionNo = @bgh)
         ";
 
         $dataAmeen = collect(DB::connection('wri')->select($SQL2 , [$area]));
@@ -418,7 +424,7 @@ and c.CityNo = ?
       FROM [dbo].[V_JPlans]
       INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
       WHERE V_JPlans.[AssignedTO] = ?   AND  V_JPlans.[StartWeek] = ?  AND V_JPlans.$day = 1
-      and HH_Customer.CityNo is not null 
+      and HH_Customer.CityNo is not null
         " , [$salesman , $weekNum]);
 
         return empty($routes)? false : $routes;
@@ -489,7 +495,7 @@ and c.CityNo = ?
     private function getAllAreas(){
         $SQL = "
         WITH Areas as (
-SELECT 
+SELECT
 CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end AreaName
 , CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end AreaCode
 FROM
@@ -497,12 +503,12 @@ HH_Region reg
 INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
 INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
 WHERE reg.buid = 105
-GROUP BY 
+GROUP BY
 CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA) end
 , CASE WHEN reg.RegionNo = 'BGH' THEN (reg.RegionNo + '-' +cit.CITYNO) ELSE reg.RegionNo end
 )
 , am as (
-SELECT 
+SELECT
 am.CustomerName as CustomerNameA
 , am.lat as Latitude
 , am.lon as Longitude
@@ -518,7 +524,7 @@ and lat IS NOT NULL and lat != 0
 and am.DealAmeen = 1 and DealSB IS NULL
 )
 
-SELECT 
+SELECT
 *
 , (SELECT COUNT(am.CustomerNameA) FROM am WHERE am.AreaCode = areas.AreaCode) ameenCustomers
 , (SELECT polypoints from WR_Area_Polygon p where 'BGH-'+p.Code = areas.AreaCode) polypoints

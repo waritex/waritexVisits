@@ -799,7 +799,7 @@ FROM Areas
 ) tbl
 WHERE 1=1
 and tbl.polypoints IS NOT NULL
-and salesman = 'IRQ027'
+-- and salesman = 'IRQ027'
 $s
         ";
 
