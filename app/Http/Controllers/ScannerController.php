@@ -316,7 +316,7 @@ WHERE c.CityNo = ?
         $dataSB = collect(DB::connection('wri')->select($SQL1 , [$area , $area]));
 
         $SQL2 = "
-DECLARE @city nvarchar(6) = ? ;
+DECLARE @city nvarchar(6) = '$area' ;
 DECLARE @bgh nvarchar(5) = (SELECT top 1 x.regionNo from HH_City x WHERE CITYNO = @city);
 SELECT *
 FROM
@@ -341,7 +341,7 @@ OR
 (@bgh != 'BGH' and tbl.regionNo = @bgh)
         ";
 
-        $dataAmeen = collect(DB::connection('wri')->select($SQL2 , [$area]));
+        $dataAmeen = collect(DB::connection('wri')->select($SQL2 , []));
 
         $polygon = collect([]);
         $p = collect(DB::connection('wri')->select(" SELECT * FROM WR_Area_Polygon WHERE Code = ? " , [$area]));
