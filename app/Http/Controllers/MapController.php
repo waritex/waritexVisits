@@ -296,7 +296,7 @@ order by Balance desc
         }
         catch (\Exception $exception){}
         $banned = [];
-        if ($s->groups!=null && $area!==false && $area!==null)
+        if ($s->groups!=null)
             $banned = $this->getBannedCustomers($s->groups,$area);
         return compact('res' , 'avgs','banned');
     }
@@ -339,6 +339,14 @@ order by Balance desc
             $qry = $groups->pluck('code')
                 ->transform(function ($item, $key) {return "'".$item."'";})
                 ->implode(',');
+        $cityQry = "  ";
+        if ($area!==false && $area!==null)
+            $cityQry = " AND HH_Customer.CityNo = '$area' ";
+        $groupQry = "  ";
+        if ($group==1)
+            $groupQry = " AND atr1.AttrID IS NOT NULL ";
+        elseif ($group==2)
+            $groupQry = " AND atr.AttrID IS NULL ";
 
         $SQL = "
         SELECT
@@ -361,13 +369,15 @@ LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_Dist
 LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
 LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
 LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+LEFT JOIN hh_CustomerAttr as atr1 on atr1.CustomerNO = V_JPlans.CustomerID and atr1.AttrID = 'Company_2'
 WHERE 1=1
 AND V_JPlans.AssignedTO in ( $qry )
 AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
 AND HH_Customer.inactive = 0
-AND HH_Customer.CityNo = ?
+$cityQry
+$groupQry
         ";
-        $custs = DB::connection('wri')->select($SQL , [$area]);
+        $custs = DB::connection('wri')->select($SQL , []);
         return collect($custs);
     }
 
