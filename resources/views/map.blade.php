@@ -31,6 +31,13 @@
   </script>-->
 
   <link href="build/main.css" rel="stylesheet">
+    @if(isset($jor) && $jor)
+        <style>
+            #tab-t0-1 , #tab-t0-2 , #tab-t0-3{
+                display: none;
+            }
+        </style>
+    @endif
 
 </head>
 <body>

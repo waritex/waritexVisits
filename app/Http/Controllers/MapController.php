@@ -17,6 +17,11 @@ class MapController extends Controller
     {
         return view('map');
     }
+    public function showWebJor()
+    {
+        $jor = true;
+        return view('map',compact('jor'));
+    }
 
     public function showKSAWeb()
     {
@@ -50,6 +55,7 @@ order by Balance desc
     {
         return view('CustomersMap');
     }
+
 
     // Get today's Customers in Route for a Salesman
     public function get_customers(Request $request)

@@ -40,6 +40,7 @@ Route::get('/calcd' , 'KsaDistinaceController@distance');
 ///////////////////////////////////////////////////////////////////
 // Web App
 Route::get('/map','MapController@showWeb');
+Route::get('/jmap','MapController@showWebJor');
 Route::get('/Adminmap',function(){return view('AdminMap');});
 Route::get('/ksamap','MapController@showKSAWeb');
 Route::get('/webmap','MapController@showMapWeb');
