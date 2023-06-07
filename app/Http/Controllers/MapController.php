@@ -303,7 +303,7 @@ order by Balance desc
         catch (\Exception $exception){}
         $banned = [];
         if ($s->groups!=null)
-            $banned = $this->getBannedCustomers($s->groups,$area);
+            $banned = $this->getBannedCustomers($s->groups,$area , $salesman);
         return compact('res' , 'avgs','banned');
     }
 
@@ -337,7 +337,7 @@ order by Balance desc
 
     }
 
-    private function getBannedCustomers($group , $area){
+    private function getBannedCustomers($group , $area, $salesman=null){
         $groups = MapUser::where('groups','!=', $group)
             ->whereNotNull('groups')->get();
         $qry = "''";
@@ -353,6 +353,70 @@ order by Balance desc
             $groupQry = " AND atr1.AttrID IS NOT NULL ";
         elseif ($group==2)
             $groupQry = " AND atr.AttrID IS NULL ";
+
+        $SSQL="  ";
+        if ($salesman=='IRQ031'){
+            $SSQL = "
+UNION ALL
+SELECT
+V_JPlans.AssignedTO			as SalesmanCode
+,V_JPlans.CustomerID			as CustomerID
+,HH_Customer.CustomerNameA		as CustomerName
+,HH_Customer.Latitude			as Lat
+,HH_Customer.Longitude			as Lng
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_District.DistrictNameA
+, HH_City.CityNameA
+, HH_Area.AreaNameA
+, NULL as AttrID
+FROM V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_District.DistrictNo = HH_Customer.DistrictNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+LEFT JOIN hh_CustomerAttr as atr1 on atr1.CustomerNO = V_JPlans.CustomerID and atr1.AttrID = 'Company_2'
+WHERE 1=1
+AND V_JPlans.AssignedTO in ( 'IRQ027' )
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
+AND HH_Customer.inactive = 0
+AND HH_Customer.regionno = 'NJF'
+            ";
+        }
+        elseif ($salesman=='IRQ027'){
+            $SSQL = "
+UNION ALL
+SELECT
+V_JPlans.AssignedTO			as SalesmanCode
+,V_JPlans.CustomerID			as CustomerID
+,HH_Customer.CustomerNameA		as CustomerName
+,HH_Customer.Latitude			as Lat
+,HH_Customer.Longitude			as Lng
+, HH_Customer.CityNo
+, HH_Customer.RegionNo
+, HH_Region.RegionNameA
+, HH_District.DistrictNameA
+, HH_City.CityNameA
+, HH_Area.AreaNameA
+, NULL as AttrID
+FROM V_JPlans
+INNER JOIN HH_Customer ON HH_Customer.CustomerNo = V_JPlans.CustomerID
+LEFT JOIN HH_Region on HH_Region.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_District on HH_District.RegionNo = HH_Customer.RegionNo and HH_District.DistrictNo = HH_Customer.DistrictNo
+LEFT JOIN HH_City on HH_City.CITYNO = HH_Customer.CityNo and HH_City.DistrictNo = HH_Customer.DistrictNo and HH_City.RegionNo = HH_Customer.RegionNo
+LEFT JOIN HH_Area on HH_Area.AreaNo = HH_Customer.AreaNo and HH_Area.CityNo = HH_Customer.CityNo and HH_Area.DistrictNo = HH_Customer.DistrictNo and HH_Area.RegionNo = HH_Customer.RegionNo
+LEFT JOIN hh_CustomerAttr as atr on atr.CustomerNO = V_JPlans.CustomerID and atr.AttrID = 'زبائن موجودة'
+LEFT JOIN hh_CustomerAttr as atr1 on atr1.CustomerNO = V_JPlans.CustomerID and atr1.AttrID = 'Company_2'
+WHERE 1=1
+AND V_JPlans.AssignedTO in ( 'IRQ031' )
+AND (HH_Customer.Latitude != 0 AND HH_Customer.Latitude IS NOT NULL)
+AND HH_Customer.inactive = 0
+AND HH_Customer.regionno = 'NJF'
+            ";
+        }
 
         $SQL = "
         SELECT
@@ -383,6 +447,7 @@ AND HH_Customer.inactive = 0
 $cityQry
 $groupQry
         ";
+        $SQL = $SQL + $SSQL;
         $custs = DB::connection('wri')->select($SQL , []);
         return collect($custs);
     }
