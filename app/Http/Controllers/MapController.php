@@ -447,8 +447,8 @@ AND HH_Customer.inactive = 0
 $cityQry
 $groupQry
         ";
-        $SQL = $SQL + $SSQL;
-        dd($SQL);
+        $SQL = $SQL . $SSQL;
+//        dd($SQL);
         $custs = DB::connection('wri')->select($SQL , []);
         return collect($custs);
     }
