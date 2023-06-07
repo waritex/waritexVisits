@@ -448,6 +448,7 @@ $cityQry
 $groupQry
         ";
         $SQL = $SQL + $SSQL;
+        dd($SQL);
         $custs = DB::connection('wri')->select($SQL , []);
         return collect($custs);
     }
