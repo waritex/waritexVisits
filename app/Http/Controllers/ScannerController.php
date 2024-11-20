@@ -365,6 +365,29 @@ OR
         ";
 
         $dataAmeen = collect(DB::connection('wri')->select(DB::raw($SQL2) , [$area , $area , $area , $area]));
+        if ($salesman == 'NIRQ017'){
+            $dataSB = collect([]);
+            $SQLL = "
+SELECT
+c.CUstomerNo
+, c.CustomerNameA
+, reg.RegionNameA
+, dis.DistrictNameA
+, cit.CityNameA
+, c.RegionNo
+, c.DistrictNo
+, c.CityNo
+, c.Latitude
+, c.Longitude
+FROM HH_Customer c
+INNER JOIN hh_CustomerAttr atr on atr.CustomerNO = c.CUstomerNo and atr.AttrID = 'IRQ_VCus' and atr.AttrVal = 2
+LEFT JOIN HH_Region reg on reg.RegionNo = c.RegionNo
+LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.DistrictNo
+LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
+WHERE c.CityNo = ?
+            ";
+            $dataAmeen = collect(DB::connection('wri')->select(DB::raw($SQLL) , [$area]));
+        }
 
 
         $polygon = collect([]);
