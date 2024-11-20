@@ -421,6 +421,9 @@ and c.CityNo = ?
         ";
 
         $scanner = collect(DB::connection('wri')->select($SQL2 , [$salesman , $area]));
+        if ($salesman == 'NIRQ017'){
+            $scanner = collect([]);
+        }
         return compact('scanner');
     }
 
