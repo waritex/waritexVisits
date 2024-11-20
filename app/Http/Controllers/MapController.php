@@ -836,16 +836,16 @@ $s
         $sql = "
 WITH Areas as (
 SELECT
-CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end AreaName
+CASE WHEN reg.RegionNo = 'NBGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end AreaName
 , cit.CITYNO AreaCode
 , reg.RegionNo
 FROM
 HH_Region reg
 INNER JOIN HH_District dis on dis.RegionNo = reg.RegionNo
 INNER JOIN HH_City cit on cit.RegionNo = reg.RegionNo and cit.DistrictNo = dis.DistrictNo
-WHERE reg.buid = 105
+WHERE reg.buid = 108
 GROUP BY
-CASE WHEN reg.RegionNo = 'BGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end
+CASE WHEN reg.RegionNo = 'NBGH' THEN cit.CityNameA ELSE ('م. ' + RegionNameA + ' - ' + CityNameA) end
 , reg.RegionNo
 , cit.CITYNO
 )
