@@ -384,7 +384,7 @@ LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.Di
 LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
 WHERE CustomerNameA like 'زبون خريطة%' and c.CityNo = ?
             ";
-            $dataSB = collect(DB::connection('wri')->select($SQL1 , [$area]));
+            $dataSB = collect(DB::connection('wri')->select($SQLM , [$area]));
 
             $SQLL = "
 SELECT
