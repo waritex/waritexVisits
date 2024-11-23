@@ -441,7 +441,25 @@ and c.CityNo = ?
 
         $scanner = collect(DB::connection('wri')->select($SQL2 , [$salesman , $area]));
         if ($salesman == 'NIRQ017'){
-            $scanner = collect([]);
+            $SQLM = "
+            SELECT
+c.CUstomerNo
+, c.CustomerNameA
+, reg.RegionNameA
+, dis.DistrictNameA
+, cit.CityNameA
+, c.RegionNo
+, c.DistrictNo
+, c.CityNo
+, c.Latitude
+, c.Longitude
+FROM HH_Customer c
+LEFT JOIN HH_Region reg on reg.RegionNo = c.RegionNo
+LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.DistrictNo
+LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
+WHERE CustomerNameA like 'زبون خريطة%' and c.CityNo = ?
+            ";
+            $scanner = collect(DB::connection('wri')->select($SQLM , [$area]));
         }
         return compact('scanner');
     }
