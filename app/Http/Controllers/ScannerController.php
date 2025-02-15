@@ -405,6 +405,28 @@ LEFT JOIN HH_District dis on dis.RegionNo = c.RegionNo and dis.DistrictNo = c.Di
 LEFT JOIN HH_City cit on cit.RegionNo = c.RegionNo and cit.DistrictNo = c.DistrictNo and cit.CITYNO = c.CityNo
 WHERE c.CityNo = ?
             ";
+            $SQLL = "
+SELECT *
+FROM
+(
+SELECT
+am.CustomerName as CustomerNameA
+, am.lat as Latitude
+, am.lon as Longitude
+, regionNo
+, RegionName as RegionNameA
+, DistrictName as DistrictNameA
+, CityName as CityNameA
+, 'IQ' + RIGHT('000'+CAST(cityNo AS VARCHAR(3)),3) citySB
+FROM WR_IRQ_AmeenCustomers am
+WHERE 1=1
+and lat IS NOT NULL and lat != 0
+and am.DealAmeen = 1 and DealSB IS NULL
+) tbl
+WHERE
+tbl.citySB = RIGHT(?,5)
+
+            ";
             $dataAmeen = collect(DB::connection('wri')->select(DB::raw($SQLL) , [$area]));
         }
 
