@@ -26,11 +26,13 @@ class AuthController extends Controller
     {
         $data = $this->validate($request , [
             'username'   => ['required','string'],
+            'password'   => ['required','string'],
         ]);
 
         $username = $data['username'];
+        $password = $data['password'];
 
-        $user = MapUser::where('username', $username)->first();
+        $user = MapUser::where('username', $username)->where('password',$password)->first();
         if ( $user ){
             return response()->json($user,200);
         }
