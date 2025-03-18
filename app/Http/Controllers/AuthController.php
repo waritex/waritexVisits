@@ -26,7 +26,7 @@ class AuthController extends Controller
     {
         $data = $this->validate($request , [
             'username'   => ['required','string'],
-            'password'   => ['required','string'],
+            'password'   => ['string'],
         ]);
 
         $username = $data['username'];
