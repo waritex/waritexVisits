@@ -77,6 +77,11 @@ Route::post('/py/getpy','PaymentController@get_user_payments_with_search')->name
 Route::post('/py/getpyadmin','PaymentController@get_admin_payments_with_search')->name('py_getpyadmin');
 Route::post('/py/uppyst','PaymentController@update_status')->name('py_uppyst');
 Route::get('/py/payments','PaymentController@get_all_payments')->name('py_payments');
+
+// New Waritex Map:
+Route::post('/wr_get_regions','MapController@get_regions');
+Route::post('/wr_get_areas','MapController@get_areas');
+
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 ///

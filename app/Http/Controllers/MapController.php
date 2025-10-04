@@ -884,5 +884,24 @@ $s
         return json_decode((string) $response->getBody(), true);
     }
 
+    /*****************************************************
+    /*****************************************************
+     * new version Waritex Map v0.4.00
+     */
+    public function get_regions(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , 'Region' ";
+        return collect(DB::connection('wri')->select($SQL , [$salesman]));
+    }
+
+    public function get_areas(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        $region = $request->post('region',false);
+        $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , ? ";
+        return collect(DB::connection('wri')->select($SQL , [$salesman , $region]));
+    }
+
 
 }
