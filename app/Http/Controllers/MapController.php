@@ -890,7 +890,7 @@ $s
      */
     public function get_regions(Request $request)
     {
-        $salesman = $request->post('salesman',false);
+        $salesman = $request->post('salesman','NIRQ004');
         $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , 'Region' ";
         return collect(DB::connection('wri')->select($SQL , [$salesman]));
     }

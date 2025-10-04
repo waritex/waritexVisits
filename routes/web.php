@@ -88,7 +88,7 @@ Route::post('/wr_get_areas','MapController@get_areas');
 /// Test URLs
 ///
 ///////////////////////////////////////////////////////////////////
-Route::get('/test' , 'MapController@get_customer_items_info');
+Route::get('/test' , 'MapController@get_regions');
 Route::get('/test1' , 'MapController@get_today_name');
 Route::get('/test12' , 'MapController@get_salesbuzz_week_number');
 Route::get('/tt' , 'ScannerController@ask_here');
