@@ -81,6 +81,7 @@ Route::get('/py/payments','PaymentController@get_all_payments')->name('py_paymen
 // New Waritex Map:
 Route::post('/wr_get_regions','MapController@get_regions');
 Route::post('/wr_get_areas','MapController@get_areas');
+Route::post('/wr_get_cust_in_areas','MapController@get_customers_in_areas');
 
 ////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
