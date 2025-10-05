@@ -903,5 +903,20 @@ $s
         return collect(DB::connection('wri')->select($SQL , [$salesman , $region]));
     }
 
+    public function get_customers_in_areas(Request $request)
+    {
+        $salesman = $request->post('salesman',false);
+        $area_code = $request->post('area',false);
+        $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , ? , ? ";
+        $res = collect(DB::connection('wri')->select($SQL , [$salesman , null , $area_code]));
+        $col = $res->map(function ($item){
+            $xml = simplexml_load_string($item->info);
+            $json = json_encode($xml);
+            $item->info1 = $json;
+            return $item;
+        });
+        return $col;
+    }
+
 
 }
