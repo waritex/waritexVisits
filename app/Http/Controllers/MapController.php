@@ -912,7 +912,7 @@ $s
         $col = $res->map(function ($item){
             $xml = simplexml_load_string($item->info);
             $json = json_encode($xml);
-            $item->info = $json;
+            $item->info1 = $json;
             return $item;
         });
         return $col;
