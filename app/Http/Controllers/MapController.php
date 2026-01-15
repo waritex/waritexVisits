@@ -913,6 +913,13 @@ $s
             $xml = simplexml_load_string($item->info);
             $json = json_encode($xml);
             $item->info = $json;
+
+            // 2. FIX THE META_DATA ENCODING
+            if (!empty($item->meta_data)) {
+                // Convert from Windows-1256 (Arabic) to UTF-8
+                $item->meta_data = mb_convert_encoding($item->meta_data, 'UTF-8', 'Windows-1256');
+            }
+            
             return $item;
         });
         return $col;

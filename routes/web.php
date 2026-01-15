@@ -98,5 +98,16 @@ Route::get('/gtt/{salesman?}' , 'ScannerController@askg_v2');
 Route::get('/date' , 'MapController@get_today_name');
 Route::get('/schedule' , 'MapController@get_schedule');
 Route::get('/infoo' , function () {
-echo phpinfo();
+// echo phpinfo();
+    $salesman = 'NIRQ046';
+    $area_code = 'انبار';
+    $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , ? , ? ";
+    $res = collect(DB::connection('wri')->select($SQL , [$salesman , null , $area_code]));
+    $col = $res->map(function ($item){
+        $xml = simplexml_load_string($item->info);
+        $json = json_encode($xml);
+        $item->info = $json;
+        return $item;
+    });
+    return $col;
 });

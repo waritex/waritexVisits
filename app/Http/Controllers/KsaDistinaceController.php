@@ -199,4 +199,10 @@ class KsaDistinaceController extends Controller
 
         return json_decode((string) $response->getBody(), true);
     }
+
+
+    public function getYesterdayOrders()
+    {
+        
+    }
 }
