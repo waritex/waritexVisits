@@ -925,7 +925,7 @@ $s
         if (!empty($item->meta_xml)) {
             $salesData = simplexml_load_string($item->meta_xml);
 
-            $html = '<table class="sales">';
+            $html = '<table dir="rtl" style="width: 99%; margin-top: 1px;margin-bottom: 1px;">';
             $html .= '<tr><th>السنة</th><th>اجمالي المبيعات</th></tr>';
 
             foreach ($salesData->Row as $row) {
