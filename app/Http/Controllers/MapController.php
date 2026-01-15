@@ -913,16 +913,38 @@ $s
             $xml = simplexml_load_string($item->info);
             $json = json_encode($xml);
             $item->info = $json;
-
-            // 2. FIX THE META_DATA ENCODING
-            if (!empty($item->meta_data)) {
-                // Convert from Windows-1256 (Arabic) to UTF-8
-                $item->meta_data = mb_convert_encoding($item->meta_data, 'UTF-8', 'Windows-1256');
-            }
-            
+            $this->meta_data($item);
             return $item;
         });
         return $col;
+    }
+
+    public function meta_data($item)
+    {
+        // 2. Convert 'meta_xml' to HTML Table
+        if (!empty($item->meta_xml)) {
+            $salesData = simplexml_load_string($item->meta_xml);
+
+            $html = '<table class="sales">';
+            $html .= '<tr><th>السنة</th><th>اجمالي المبيعات</th></tr>';
+
+            foreach ($salesData->Row as $row) {
+                $html .= '<tr>';
+                $html .= '<td>' . (string)$row->Year . '</td>';
+                $html .= '<td>' . (string)$row->Total . '</td>';
+                $html .= '</tr>';
+            }
+
+            $html .= '</table>';
+
+            $item->meta_data = $html; // Set the new HTML string
+        } else {
+            $item->meta_data = '<table class="sales"><tr><td>No Data</td></tr></table>';
+        }
+
+        // Remove the raw XML from the response to keep it clean
+        unset($item->meta_xml);
+        return $item;
     }
 
 
