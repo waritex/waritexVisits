@@ -9,7 +9,7 @@
         <tbody>
         <tr>
             <td style="width: 20%;">تاريخ:</td>
-            <td style="width: 50%;">
+            <td style="width: 60%;">
                 <span>{{ $item->lastDealDate }}</span>
                 @if($item->DealCut == 1)
                     <span style="background-color: red; border-radius: 50%;display: inline-block;width: 15px;height: 15px;margin-right: 16px;"></span>
