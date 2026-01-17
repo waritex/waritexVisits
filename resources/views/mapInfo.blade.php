@@ -100,7 +100,7 @@
             @foreach($item->salesData->Row as $row)
                 <tr>
                     <td style="text-align: center;">{{$row->Year}}</td>
-                    <td style="text-align: center;">{{number_format($row->Total)}}</td>
+                    <td style="text-align: center;">{{number_format((float)$row->Total)}}</td>
                 </tr>
             @endforeach
         </table>
