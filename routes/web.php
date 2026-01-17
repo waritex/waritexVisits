@@ -89,7 +89,7 @@ Route::post('/wr_get_cust_in_areas','MapController@get_customers_in_areas');
 /// Test URLs
 ///
 ///////////////////////////////////////////////////////////////////
-Route::get('/test' , 'MapController@get_regions');
+Route::get('/test' , 'MapController@get_customers_in_areas');
 Route::get('/test1' , 'MapController@get_today_name');
 Route::get('/test12' , 'MapController@get_salesbuzz_week_number');
 Route::get('/tt' , 'ScannerController@ask_here');
@@ -98,16 +98,5 @@ Route::get('/gtt/{salesman?}' , 'ScannerController@askg_v2');
 Route::get('/date' , 'MapController@get_today_name');
 Route::get('/schedule' , 'MapController@get_schedule');
 Route::get('/infoo' , function () {
-// echo phpinfo();
-    $salesman = 'NIRQ046';
-    $area_code = 'انبار';
-    $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , ? , ? ";
-    $res = collect(DB::connection('wri')->select($SQL , [$salesman , null , $area_code]));
-    $col = $res->map(function ($item){
-        $xml = simplexml_load_string($item->info);
-        $json = json_encode($xml);
-        $item->info = $json;
-        return $item;
-    });
-    return $col;
+ echo phpinfo();
 });

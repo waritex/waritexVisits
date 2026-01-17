@@ -905,8 +905,8 @@ $s
 
     public function get_customers_in_areas(Request $request)
     {
-        $salesman = $request->post('salesman',false);
-        $area_code = $request->post('area',false);
+        $salesman = $request->post('salesman','NIRQ046');
+        $area_code = $request->post('area','انبار');
         $SQL = " EXEC WR_Map_Customers_By_Areas_2 ? , ? , ? ";
         $res = collect(DB::connection('wri')->select($SQL , [$salesman , null , $area_code]));
         $col = $res->map(function ($item){
@@ -924,24 +924,13 @@ $s
         // 2. Convert 'meta_xml' to HTML Table
         if (!empty($item->meta_xml)) {
             $salesData = simplexml_load_string($item->meta_xml);
-
-            $html = '<table dir="rtl" style="width: 99%; margin-top: 1px;margin-bottom: 1px;">';
-            $html .= '<tr><th>السنة</th><th>اجمالي المبيعات</th></tr>';
-
-            foreach ($salesData->Row as $row) {
-                $html .= '<tr>';
-                $html .= '<td>' . (string)$row->Year . '</td>';
-                $html .= '<td>' . (string)$row->Total . '</td>';
-                $html .= '</tr>';
-            }
-
-            $html .= '</table>';
-
-            $item->meta_data = $html; // Set the new HTML string
-        } else {
-            $item->meta_data = '<table class="sales"><tr><td>No Data</td></tr></table>';
+            $item->salesData = $salesData;
         }
-
+        else{
+            $item->salesData = [];
+        }
+        $html = view('mapInfo',compact('item'))->render();
+        $item->meta_data = $html; // Set the new HTML string
         // Remove the raw XML from the response to keep it clean
         unset($item->meta_xml);
         return $item;
