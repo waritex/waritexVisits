@@ -3,7 +3,7 @@
     <table style="width: 100%; border-bottom: 1px solid;">
         <thead>
         <tr>
-            <th colspan="4">آخر تعامل</th>
+            <th colspan="4" style="text-align: right; font-weight: bold;">آخر تعامل</th>
         </tr>
         </thead>
         <tbody>
@@ -34,7 +34,7 @@
     <table style="width: 100%; border-bottom: 1px solid;">
         <thead>
         <tr>
-            <th colspan="4">أكبر تعامل</th>
+            <th colspan="4" style="text-align: right; font-weight: bold;">أكبر تعامل</th>
         </tr>
         </thead>
         <tbody>
@@ -56,7 +56,7 @@
     <table style="width: 100%; border-bottom: 1px solid;">
         <thead>
         <tr>
-            <th colspan="4">آخر زيارة</th>
+            <th colspan="4" style="text-align: right; font-weight: bold;">آخر زيارة</th>
         </tr>
         </thead>
         <tbody>
@@ -100,7 +100,7 @@
             @foreach($item->salesData->Row as $row)
                 <tr>
                     <td style="text-align: center;">{{$row->Year}}</td>
-                    <td style="text-align: center;">{{$row->Total}}</td>
+                    <td style="text-align: center;">{{number_format($row->Total)}}</td>
                 </tr>
             @endforeach
         </table>
